@@ -34,188 +34,22 @@ st.set_page_config(**PAGE_CONFIG)
 # ═══════════════════════════════════════════════════════════════════════════════
 
 def apply_modern_theme():
-    """Apply modern theme with light cards on dark gradient background."""
+    """Apply minimal theme with gradient background only."""
     css = """
     <style>
-    /* ═════════════════════════════════════════════════════════════════ */
-    /* GLOBAL STYLING - DARK GRADIENT BACKGROUND */
-    /* ═════════════════════════════════════════════════════════════════ */
-    
+    /* Keep only the gradient background */
     .stApp {
-        background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #6a3093 100%);
+        background: linear-gradient(135deg, #1e3c72, #2a5298);
         background-attachment: fixed;
-        min-height: 100vh;
     }
     
-    /* ═════════════════════════════════════════════════════════════════ */
-    /* MAIN CONTENT AREA - WHITE CARDS */
-    /* ═════════════════════════════════════════════════════════════════ */
-    
-    /* Main content containers */
-    section.main > div {
-        background: rgba(255, 255, 255, 0.95) !important;
-        padding: 25px !important;
-        border-radius: 15px !important;
-        margin-bottom: 20px !important;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15) !important;
-    }
-    
-    /* Fix text inside main content to be dark/readable */
-    section.main, section.main * {
-        color: #222222 !important;
-    }
-    
-    /* Override specific elements in main area */
-    section.main h1, section.main h2, section.main h3, section.main h4, section.main h5, section.main h6 {
-        color: #1e3c72 !important;
-        font-weight: 700 !important;
-    }
-    
-    section.main p, section.main span, section.main label, section.main div {
-        color: #333333 !important;
-    }
-    
-    section.main .stMetric {
-        color: #1e3c72 !important;
-    }
-    
-    /* ═════════════════════════════════════════════════════════════════ */
-    /* EXPANDERS & ADVANCED SECTIONS - WHITE BACKGROUND */
-    /* ═════════════════════════════════════════════════════════════════ */
-    
-    [data-testid="stExpander"] {
-        background: rgba(255, 255, 255, 0.95) !important;
-        border-radius: 12px !important;
-        padding: 10px !important;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
-    }
-    
-    [data-testid="stExpander"] * {
-        color: #222222 !important;
-    }
-    
-    [data-testid="stExpander"] h1, [data-testid="stExpander"] h2, 
-    [data-testid="stExpander"] h3, [data-testid="stExpander"] h4 {
-        color: #1e3c72 !important;
-    }
-    
-    /* ═════════════════════════════════════════════════════════════════ */
-    /* SIDEBAR - KEEP DARK */
-    /* ═════════════════════════════════════════════════════════════════ */
-    
-    section[data-testid="stSidebar"] {
-        background: linear-gradient(180deg, #1e3c72 0%, #2a5298 100%) !important;
-        color: white !important;
-    }
-    
-    section[data-testid="stSidebar"] * {
-        color: white !important;
-    }
-    
-    section[data-testid="stSidebar"] h1, section[data-testid="stSidebar"] h2, 
-    section[data-testid="stSidebar"] h3, section[data-testid="stSidebar"] h4 {
-        color: #ffffff !important;
-    }
-    
-    section[data-testid="stSidebar"] p, section[data-testid="stSidebar"] span, 
-    section[data-testid="stSidebar"] label {
-        color: rgba(255, 255, 255, 0.95) !important;
-    }
-    
-    /* ═════════════════════════════════════════════════════════════════ */
-    /* TABS STYLING */
-    /* ═════════════════════════════════════════════════════════════════ */
-    
-    button[data-baseweb="tab"] {
-        background: rgba(255, 255, 255, 0.2) !important;
-        color: white !important;
-        border-radius: 10px !important;
-        font-weight: 600 !important;
-        border: 1px solid rgba(255, 255, 255, 0.3) !important;
-    }
-    
-    button[data-baseweb="tab"][aria-selected="true"] {
-        background: linear-gradient(135deg, #ff7eb3 0%, #ff758c 100%) !important;
-        color: white !important;
-        box-shadow: 0 4px 12px rgba(255, 126, 179, 0.4) !important;
-    }
-    
-    /* ═════════════════════════════════════════════════════════════════ */
-    /* BUTTONS */
-    /* ═════════════════════════════════════════════════════════════════ */
-    
-    .stButton > button {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
-        color: white !important;
-        border: none !important;
-        border-radius: 10px !important;
-        font-weight: 600 !important;
-        transition: all 0.3s ease !important;
-        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4) !important;
-    }
-    
-    .stButton > button:hover {
-        transform: translateY(-2px) !important;
-        box-shadow: 0 6px 16px rgba(102, 126, 234, 0.6) !important;
-    }
-    
-    /* ═════════════════════════════════════════════════════════════════ */
-    /* FILE UPLOADER */
-    /* ═════════════════════════════════════════════════════════════════ */
-    
-    .stFileUploadDropzone {
-        border-radius: 15px !important;
-        border: 2px dashed rgba(255, 255, 255, 0.4) !important;
-        background: rgba(255, 255, 255, 0.1) !important;
-    }
-    
-    .stFileUploadDropzone p {
-        color: rgba(255, 255, 255, 0.8) !important;
-    }
-    
-    /* ═════════════════════════════════════════════════════════════════ */
-    /* INPUTS & CONTROLS */
-    /* ═════════════════════════════════════════════════════════════════ */
-    
-    .stSlider {
-        padding: 15px !important;
-    }
-    
-    .stSlider label {
-        color: rgba(255, 255, 255, 0.9) !important;
-    }
-    
-    .stTextInput, .stNumberInput, .stSelectbox {
-        color: #222222 !important;
-    }
-    
-    /* ═════════════════════════════════════════════════════════════════ */
-    /* ALERTS & WARNINGS */
-    /* ═════════════════════════════════════════════════════════════════ */
-    
-    .stAlert {
-        background: rgba(255, 255, 255, 0.95) !important;
-        border-radius: 10px !important;
-        border-left: 4px solid #ff7eb3 !important;
-        padding: 15px !important;
-    }
-    
-    .stAlert p, .stAlert * {
-        color: #222222 !important;
-    }
-    
-    /* ═════════════════════════════════════════════════════════════════ */
-    /* RESPONSIVE DESIGN */
-    /* ═════════════════════════════════════════════════════════════════ */
-    
-    @media (max-width: 768px) {
-        section.main > div {
-            padding: 15px !important;
-        }
-        
-        [data-testid="stExpander"] {
-            padding: 8px !important;
-        }
+    /* Style card divs with inline styles (no global overrides) */
+    .card {
+        background: white;
+        padding: 20px;
+        border-radius: 12px;
+        margin-bottom: 15px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
     </style>
     """
@@ -574,7 +408,7 @@ def main():
     # Info section in card
     st.markdown("""
     <div class="card">
-        <h3 style="color: #2a5298; margin-top: 0;">✨ Features</h3>
+        <h3 style="color: #1a3a52; margin-top: 0;">✨ Features</h3>
         <p><strong>Genre Classification:</strong> Rule-based prediction using spectral features (Spectral Centroid, Zero Crossing Rate, BPM, RMS Energy)</p>
         <p><strong>Advanced Visualizations:</strong> Waveform, Mel-Spectrogram, Spectral Analysis, FFT, Chromagram</p>
         <p><strong>Performance:</strong> Optimized for cloud deployment – <100MB memory, <5 seconds processing</p>
@@ -597,7 +431,7 @@ def main():
         # Upload section in card
         st.markdown("""
         <div class="card">
-            <h3 style="color: #2a5298; margin-top: 0;">📤 Upload Audio File</h3>
+            <h3 style="color: #1a3a52; margin-top: 0;">📤 Upload Audio File</h3>
             <p>Select an audio file for analysis. Supports MP3, WAV, OGG, FLAC formats.</p>
         </div>
         """, unsafe_allow_html=True)
@@ -626,8 +460,13 @@ def main():
                         # Analysis results in card
                         st.markdown("""
                         <div class="card">
-                            <h3 style="color: #2a5298; margin-top: 0;">📊 Analysis Results</h3>
+                            <h3 style="color: #1a3a52; margin-top: 0;">📊 Analysis Results</h3>
                         </div>
+                        """, unsafe_allow_html=True)
+                        
+                        # Metrics inside white card
+                        st.markdown("""
+                        <div class="card" style="background: white; padding: 20px;">
                         """, unsafe_allow_html=True)
                         
                         col1, col2, col3, col4 = st.columns(4)
@@ -645,6 +484,8 @@ def main():
                         
                         with col4:
                             st.metric("✅ Confidence", f"{confidence}%")
+                        
+                        st.markdown("""</div>""", unsafe_allow_html=True)
                         
                         # Audio player
                         st.audio(uploaded_file, format=f"audio/{Path(uploaded_file.name).suffix.strip('.')}")
