@@ -82,6 +82,118 @@ def detect_bpm(y, sr):
         return "Not detected"
 
 
+def extract_audio_features(y, sr):
+    """
+    Extract audio features for genre classification.
+    
+    Args:
+        y: Audio time series (mono)
+        sr: Sample rate
+    
+    Returns:
+        dict: Features including spectral_centroid, zero_crossing_rate, tempo
+    """
+    try:
+        features = {}
+        
+        # Spectral Centroid (brightness of sound)
+        spectral_centroid = librosa.feature.spectral_centroid(y=y, sr=sr)[0]
+        features['spectral_centroid_mean'] = np.mean(spectral_centroid)
+        features['spectral_centroid_std'] = np.std(spectral_centroid)
+        
+        # Zero Crossing Rate (noisiness)
+        zcr = librosa.feature.zero_crossing_rate(y)[0]
+        features['zero_crossing_rate_mean'] = np.mean(zcr)
+        features['zero_crossing_rate_std'] = np.std(zcr)
+        
+        # Spectral Rolloff (frequency boundary)
+        spectral_rolloff = librosa.feature.spectral_rolloff(y=y, sr=sr)[0]
+        features['spectral_rolloff_mean'] = np.mean(spectral_rolloff)
+        
+        # RMS Energy (loudness)
+        rms = librosa.feature.rms(y=y)[0]
+        features['rms_mean'] = np.mean(rms)
+        
+        logger.info(f"Features extracted - SC: {features['spectral_centroid_mean']:.1f}, ZCR: {features['zero_crossing_rate_mean']:.4f}")
+        return features
+    
+    except Exception as e:
+        logger.error(f"Feature extraction error: {e}")
+        return None
+
+
+def predict_genre(y, sr, tempo):
+    """
+    Predict genre using rule-based classification on audio features.
+    
+    Args:
+        y: Audio time series (mono)
+        sr: Sample rate
+        tempo: BPM value (int or "Not detected")
+    
+    Returns:
+        tuple: (genre, confidence) where confidence is 0-100
+    """
+    try:
+        features = extract_audio_features(y, sr)
+        
+        if features is None:
+            return "Unknown", 0
+        
+        # Extract feature values
+        sc_mean = features['spectral_centroid_mean']
+        zcr_mean = features['zero_crossing_rate_mean']
+        rms_mean = features['rms_mean']
+        
+        # Convert tempo to int if it's a valid BPM
+        bpm = int(tempo) if isinstance(tempo, int) else 0
+        
+        # Initialize prediction variables
+        genre = "Pop"  # Default
+        confidence = 65  # Base confidence
+        
+        # Rule-based classification logic
+        if bpm > 140:
+            # Fast tempo → Electronic/Dance
+            genre = "Electronic"
+            confidence = min(90, 65 + (bpm - 140) // 20)  # Higher BPM = higher confidence
+        
+        elif sc_mean > 3000:
+            # High spectral centroid → Rock/Metal/Bright
+            genre = "Rock"
+            confidence = min(85, 60 + (sc_mean - 3000) / 500)
+        
+        elif zcr_mean < 0.05:
+            # Low zero crossing rate → Classical/Smooth
+            genre = "Classical"
+            confidence = min(85, 65 + (0.05 - zcr_mean) * 100)
+        
+        elif rms_mean > 0.15:
+            # High RMS energy → Rock/Hip-Hop/Loud
+            genre = "Rock"
+            confidence = min(85, 60 + (rms_mean - 0.15) * 200)
+        
+        elif sc_mean < 1500:
+            # Low spectral centroid → Bass-heavy/Jazz/R&B
+            genre = "Jazz"
+            confidence = min(85, 65 + (1500 - sc_mean) / 1000)
+        
+        else:
+            # Middle range → Pop (default)
+            genre = "Pop"
+            confidence = 65
+        
+        # Ensure confidence is in valid range
+        confidence = max(60, min(90, int(confidence)))
+        
+        logger.info(f"Genre predicted: {genre} ({confidence}%) - SC: {sc_mean:.1f}, ZCR: {zcr_mean:.4f}, BPM: {bpm}")
+        return genre, confidence
+    
+    except Exception as e:
+        logger.error(f"Genre prediction error: {e}")
+        return "Unknown", 0
+
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # VISUALIZATION
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -212,8 +324,8 @@ def main():
     st.markdown("# 🎵 Music Signal Analysis System")
     st.markdown("Lightweight demo: Analyze waveforms, spectrograms, and detect BPM")
     
-    # Info box - Genre classification not available in demo
-    st.info("ℹ️ **Genre Classification:** Not available in this deployment version. Use ML model version for genre prediction.")
+    # Info box - Genre classification using rule-based features
+    st.info("ℹ️ **Genre Classification:** Rule-based prediction using spectral features (Spectral Centroid, Zero Crossing Rate, BPM, RMS Energy)")
     
     # Sidebar
     with st.sidebar:
@@ -267,10 +379,11 @@ def main():
                                 st.metric("Tempo (BPM)", bpm if isinstance(bpm, str) else "N/A")
                         
                         with col3:
-                            st.metric("Genre", "Unknown")
+                            genre, confidence = predict_genre(y, sr, bpm)
+                            st.metric("Genre", genre)
                         
                         with col4:
-                            st.metric("Confidence", "N/A")
+                            st.metric("Confidence", f"{confidence}%")
                         
                         # Audio player
                         st.audio(uploaded_file, format=f"audio/{Path(uploaded_file.name).suffix.strip('.')}")
@@ -279,6 +392,8 @@ def main():
                         st.session_state.y = y
                         st.session_state.sr = sr
                         st.session_state.bpm = bpm
+                        st.session_state.genre = genre
+                        st.session_state.confidence = confidence
                         
                         # Clean up
                         Path(tmp_path).unlink()
