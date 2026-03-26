@@ -47,7 +47,44 @@ This project performs **music signal analysis using spectral features and beat d
 
 ---
 
-## 🔄 How It Works
+## � Screenshots
+
+### 🎵 Home Interface
+<p align="center">
+  <img src="assets/home.png" width="800" alt="Home Interface with Features Card"/>
+</p>
+
+---
+
+### 📤 Upload & Analysis
+<p align="center">
+  <img src="assets/upload.png" width="800" alt="Upload Section with File Uploader"/>
+</p>
+
+---
+
+### 📊 Analysis Results
+<p align="center">
+  <img src="assets/results.png" width="800" alt="Analysis Results with Metrics"/>
+</p>
+
+---
+
+### 📈 Visualizations
+<p align="center">
+  <img src="assets/visualizations.png" width="800" alt="Waveform and Spectrogram Visualizations"/>
+</p>
+
+---
+
+### 🧠 Advanced Signal Analysis
+<p align="center">
+  <img src="assets/advanced.png" width="800" alt="Advanced Signal Analysis with Expandable Sections"/>
+</p>
+
+---
+
+## �🔄 How It Works
 
 ### Data Processing Pipeline
 
