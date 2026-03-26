@@ -34,165 +34,187 @@ st.set_page_config(**PAGE_CONFIG)
 # ═══════════════════════════════════════════════════════════════════════════════
 
 def apply_modern_theme():
-    """Apply modern gradient theme with custom CSS styling."""
+    """Apply modern theme with light cards on dark gradient background."""
     css = """
     <style>
-    /* Background gradient */
+    /* ═════════════════════════════════════════════════════════════════ */
+    /* GLOBAL STYLING - DARK GRADIENT BACKGROUND */
+    /* ═════════════════════════════════════════════════════════════════ */
+    
     .stApp {
         background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #6a3093 100%);
         background-attachment: fixed;
         min-height: 100vh;
     }
     
-    /* Main container styling */
-    .main-container {
-        background: rgba(255, 255, 255, 0.95);
-        border-radius: 20px;
-        padding: 30px;
-        margin: 20px;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-        backdrop-filter: blur(10px);
+    /* ═════════════════════════════════════════════════════════════════ */
+    /* MAIN CONTENT AREA - WHITE CARDS */
+    /* ═════════════════════════════════════════════════════════════════ */
+    
+    /* Main content containers */
+    section.main > div {
+        background: rgba(255, 255, 255, 0.95) !important;
+        padding: 25px !important;
+        border-radius: 15px !important;
+        margin-bottom: 20px !important;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15) !important;
     }
     
-    /* Card styling for sections */
-    .card {
-        background: white;
-        border-radius: 15px;
-        padding: 25px;
-        margin-bottom: 20px;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-        border-left: 5px solid #6a3093;
-        transition: all 0.3s ease;
+    /* Fix text inside main content to be dark/readable */
+    section.main, section.main * {
+        color: #222222 !important;
     }
     
-    .card:hover {
-        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
-        transform: translateY(-2px);
+    /* Override specific elements in main area */
+    section.main h1, section.main h2, section.main h3, section.main h4, section.main h5, section.main h6 {
+        color: #1e3c72 !important;
+        font-weight: 700 !important;
     }
     
-    /* Headings styling */
-    h1 {
-        color: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-        font-size: 3em;
-        font-weight: 800;
-        margin-bottom: 20px;
-        text-align: center;
-        letter-spacing: 1px;
+    section.main p, section.main span, section.main label, section.main div {
+        color: #333333 !important;
     }
     
-    h2 {
-        color: #2a5298;
-        font-size: 2em;
-        font-weight: 700;
-        border-bottom: 3px solid #6a3093;
-        padding-bottom: 10px;
+    section.main .stMetric {
+        color: #1e3c72 !important;
     }
     
-    h3 {
-        color: #1e3c72;
-        font-size: 1.5em;
-        font-weight: 600;
+    /* ═════════════════════════════════════════════════════════════════ */
+    /* EXPANDERS & ADVANCED SECTIONS - WHITE BACKGROUND */
+    /* ═════════════════════════════════════════════════════════════════ */
+    
+    [data-testid="stExpander"] {
+        background: rgba(255, 255, 255, 0.95) !important;
+        border-radius: 12px !important;
+        padding: 10px !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
     }
     
-    /* Info box styling */
-    .stAlert {
-        border-radius: 15px;
-        border-left: 5px solid #2a5298;
-        background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%);
+    [data-testid="stExpander"] * {
+        color: #222222 !important;
     }
     
-    /* Metric cards */
-    .metric-container {
-        display: flex;
-        gap: 15px;
-        flex-wrap: wrap;
+    [data-testid="stExpander"] h1, [data-testid="stExpander"] h2, 
+    [data-testid="stExpander"] h3, [data-testid="stExpander"] h4 {
+        color: #1e3c72 !important;
     }
     
-    .metric-card {
-        flex: 1;
-        min-width: 200px;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        padding: 20px;
-        border-radius: 12px;
-        text-align: center;
-        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
-        transition: all 0.3s ease;
+    /* ═════════════════════════════════════════════════════════════════ */
+    /* SIDEBAR - KEEP DARK */
+    /* ═════════════════════════════════════════════════════════════════ */
+    
+    section[data-testid="stSidebar"] {
+        background: linear-gradient(180deg, #1e3c72 0%, #2a5298 100%) !important;
+        color: white !important;
     }
     
-    .metric-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+    section[data-testid="stSidebar"] * {
+        color: white !important;
     }
     
-    /* File uploader styling */
-    .stFileUploadDropzone {
-        border-radius: 15px;
-        border: 2px dashed #6a3093;
-        background: linear-gradient(135deg, rgba(106, 48, 147, 0.05) 0%, rgba(42, 82, 152, 0.05) 100%);
+    section[data-testid="stSidebar"] h1, section[data-testid="stSidebar"] h2, 
+    section[data-testid="stSidebar"] h3, section[data-testid="stSidebar"] h4 {
+        color: #ffffff !important;
     }
     
-    /* Button styling with gradient */
+    section[data-testid="stSidebar"] p, section[data-testid="stSidebar"] span, 
+    section[data-testid="stSidebar"] label {
+        color: rgba(255, 255, 255, 0.95) !important;
+    }
+    
+    /* ═════════════════════════════════════════════════════════════════ */
+    /* TABS STYLING */
+    /* ═════════════════════════════════════════════════════════════════ */
+    
+    button[data-baseweb="tab"] {
+        background: rgba(255, 255, 255, 0.2) !important;
+        color: white !important;
+        border-radius: 10px !important;
+        font-weight: 600 !important;
+        border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    }
+    
+    button[data-baseweb="tab"][aria-selected="true"] {
+        background: linear-gradient(135deg, #ff7eb3 0%, #ff758c 100%) !important;
+        color: white !important;
+        box-shadow: 0 4px 12px rgba(255, 126, 179, 0.4) !important;
+    }
+    
+    /* ═════════════════════════════════════════════════════════════════ */
+    /* BUTTONS */
+    /* ═════════════════════════════════════════════════════════════════ */
+    
     .stButton > button {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        border: none;
-        border-radius: 10px;
-        padding: 12px 30px;
-        font-weight: 600;
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+        color: white !important;
+        border: none !important;
+        border-radius: 10px !important;
+        font-weight: 600 !important;
+        transition: all 0.3s ease !important;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4) !important;
     }
     
     .stButton > button:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+        transform: translateY(-2px) !important;
+        box-shadow: 0 6px 16px rgba(102, 126, 234, 0.6) !important;
     }
     
-    /* Slider styling */
+    /* ═════════════════════════════════════════════════════════════════ */
+    /* FILE UPLOADER */
+    /* ═════════════════════════════════════════════════════════════════ */
+    
+    .stFileUploadDropzone {
+        border-radius: 15px !important;
+        border: 2px dashed rgba(255, 255, 255, 0.4) !important;
+        background: rgba(255, 255, 255, 0.1) !important;
+    }
+    
+    .stFileUploadDropzone p {
+        color: rgba(255, 255, 255, 0.8) !important;
+    }
+    
+    /* ═════════════════════════════════════════════════════════════════ */
+    /* INPUTS & CONTROLS */
+    /* ═════════════════════════════════════════════════════════════════ */
+    
     .stSlider {
-        padding: 15px;
+        padding: 15px !important;
     }
     
-    /* Tabs styling */
-    .stTabs [data-baseweb="tab"] {
-        background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%);
-        border-radius: 10px;
-        font-weight: 600;
-        color: #1e3c72;
+    .stSlider label {
+        color: rgba(255, 255, 255, 0.9) !important;
     }
     
-    .stTabs [aria-selected="true"] {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
+    .stTextInput, .stNumberInput, .stSelectbox {
+        color: #222222 !important;
     }
     
-    /* Text colors */
-    p {
-        color: #2c3e50;
-        font-size: 1.05em;
-        line-height: 1.6;
+    /* ═════════════════════════════════════════════════════════════════ */
+    /* ALERTS & WARNINGS */
+    /* ═════════════════════════════════════════════════════════════════ */
+    
+    .stAlert {
+        background: rgba(255, 255, 255, 0.95) !important;
+        border-radius: 10px !important;
+        border-left: 4px solid #ff7eb3 !important;
+        padding: 15px !important;
     }
     
-    /* Caption styling */
-    .caption {
-        color: #7f8c8d;
-        font-size: 0.95em;
-        font-style: italic;
+    .stAlert p, .stAlert * {
+        color: #222222 !important;
     }
     
-    /* Responsive design */
+    /* ═════════════════════════════════════════════════════════════════ */
+    /* RESPONSIVE DESIGN */
+    /* ═════════════════════════════════════════════════════════════════ */
+    
     @media (max-width: 768px) {
-        h1 {
-            font-size: 2em;
+        section.main > div {
+            padding: 15px !important;
         }
         
-        h2 {
-            font-size: 1.5em;
-        }
-        
-        .card {
-            padding: 15px;
+        [data-testid="stExpander"] {
+            padding: 8px !important;
         }
     }
     </style>
