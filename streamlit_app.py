@@ -46,13 +46,40 @@ def load_audio_file(file_path, sr=22050):
 
 
 def detect_bpm(y, sr):
-    """Detect BPM using beat tracking."""
+    """
+    Detect BPM using beat tracking with librosa.
+    
+    Args:
+        y: Audio time series (mono)
+        sr: Sample rate
+    
+    Returns:
+        int: BPM value or "Not detected" if detection fails
+    """
     try:
-        tempo, _ = librosa.beat.beat_track(y=y, sr=sr)
-        return float(tempo)
+        # Ensure audio is mono (should already be from load_audio_file)
+        if len(y.shape) > 1:
+            y = np.mean(y, axis=1)
+        
+        # Use only first 15 seconds for faster computation
+        max_samples = sr * 15  # 15 seconds
+        y_trunc = y[:max_samples]
+        
+        # Detect tempo using librosa beat tracking
+        tempo, _ = librosa.beat.beat_track(y=y_trunc, sr=sr)
+        
+        # Convert to integer and ensure valid range
+        bpm = int(tempo)
+        if bpm < 0 or bpm > 300:  # Sanity check
+            logger.warning(f"BPM out of range: {bpm} (expected 0-300)")
+            return "Not detected"
+        
+        logger.info(f"BPM detected: {bpm}")
+        return bpm
+    
     except Exception as e:
         logger.error(f"BPM detection error: {e}")
-        return None
+        return "Not detected"
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -234,10 +261,10 @@ def main():
                         
                         with col2:
                             bpm = detect_bpm(y, sr)
-                            if bpm:
-                                st.metric("BPM (Tempo)", f"{bpm:.1f}")
+                            if isinstance(bpm, int) and bpm > 0:
+                                st.metric("Tempo (BPM)", bpm)
                             else:
-                                st.metric("BPM (Tempo)", "N/A")
+                                st.metric("Tempo (BPM)", bpm if isinstance(bpm, str) else "N/A")
                         
                         with col3:
                             st.metric("Genre", "Unknown")
