@@ -1,0 +1,428 @@
+SPECTROGRAM VISUALIZATION - SETUP & USAGE GUIDE
+
+═══════════════════════════════════════════════════════════════════════════════
+
+OVERVIEW
+════════════════════════════════════════════════════════════════════════════════
+
+generate_spectrograms.py creates high-resolution spectrogram plots for spectral
+analysis and frequency domain visualization.
+
+- Processes 1 sample per genre (10 total images)
+- Saves PNG images to outputs/spectrograms/
+- Uses STFT (Short-Time Fourier Transform) for frequency analysis
+- Includes automatic logging and error handling
+- Displays spectrogram parameters (FFT size, hop length) on each plot
+
+═══════════════════════════════════════════════════════════════════════════════
+
+QUICK START
+════════════════════════════════════════════════════════════════════════════════
+
+1. Ensure dataset is loaded:
+   python dataset_loader.py
+
+2. Generate spectrograms:
+   python generate_spectrograms.py
+
+3. View results:
+   Check outputs/spectrograms/ folder for PNG images
+
+═══════════════════════════════════════════════════════════════════════════════
+
+SCRIPT FUNCTIONALITY
+════════════════════════════════════════════════════════════════════════════════
+
+File: generate_spectrograms.py (450+ lines)
+
+Functions:
+
+1. load_audio_file(file_path, sr=22050)
+   - Loads audio using librosa
+   - Default sample rate: 22050 Hz
+   - Returns: (audio_array, sample_rate)
+   - Error handling: Returns (None, None) on failure
+
+2. compute_spectrogram(y, sr, n_fft=2048, hop_length=512)
+   - Computes STFT (Short-Time Fourier Transform)
+   - Converts to magnitude spectrum
+   - Converts magnitude to decibel scale
+   - Returns: Spectrogram in dB (2D array)
+   - Dimension: (n_fft/2 + 1) × n_frames
+
+3. generate_spectrogram_plot(y, sr, spectrogram_db, file_path, output_path, ...)
+   - Creates matplotlib figure with spectrogram
+   - Uses librosa.display.specshow() for visualization
+   - Adds colorbar with dB scale
+   - Adds metadata box (duration, sample rate, FFT parameters)
+   - Saves PNG to output_path
+   - Returns: True/False (success status)
+
+4. process_sample_per_genre(metadata_file, n_fft=2048, hop_length=512)
+   - Main orchestration function
+   - Reads dataset_metadata.csv
+   - Processes 1 file per genre
+   - Returns statistics dictionary
+   - Includes comprehensive error handling
+
+5. print_summary(stats)
+   - Formats and prints processing summary
+   - Shows success/failure counts
+   - Lists output files with dimensions
+
+═══════════════════════════════════════════════════════════════════════════════
+
+OUTPUT STRUCTURE
+════════════════════════════════════════════════════════════════════════════════
+
+outputs/spectrograms/
+├── rock_rock.00000.png
+├── jazz_jazz.00001.png
+├── classical_classical.00002.png
+├── hiphop_hiphop.00003.png
+├── pop_pop.00004.png
+├── blues_blues.00005.png
+├── country_country.00006.png
+├── disco_disco.00007.png
+├── metal_metal.00008.png
+└── reggae_reggae.00009.png
+
+Filename format: {genre}_{audio_filename}.png
+
+═══════════════════════════════════════════════════════════════════════════════
+
+SPECTROGRAM DETAILS
+════════════════════════════════════════════════════════════════════════════════
+
+STFT Parameters:
+- FFT Window Size: 2048 samples
+- Hop Length: 512 samples
+- Window Overlap: 75% (1536 samples overlap)
+- Sample Rate: 22050 Hz
+
+Derived Dimensions:
+- Frequency Resolution: 22050 / 2048 ≈ 10.8 Hz per bin
+- Number of Frequency Bins: 1025 (n_fft/2 + 1)
+- Time Resolution: 512 / 22050 ≈ 23.2 ms per frame
+- Number of Frames: ~1448 for 30-second audio
+
+Visualization:
+- X-axis: Time in seconds (linear scale)
+- Y-axis: Frequency in Hz (logarithmic scale for better resolution)
+- Color: Magnitude in dB (brightness indicates energy)
+- Color Map: 'magma' (dark low energy, bright high energy)
+
+═══════════════════════════════════════════════════════════════════════════════
+
+PLOT SPECIFICATIONS
+════════════════════════════════════════════════════════════════════════════════
+
+Image Format:
+- Format: PNG
+- Resolution: 100 DPI
+- Display Size: 14" × 8" (1400 × 800 pixels at 100 DPI)
+- Color Map: Magma (black to yellow)
+
+Plot Content:
+- X-axis: Time (0 to ~30 seconds for GTZAN)
+- Y-axis: Frequency (log scale, 0 Hz to ~11025 Hz)
+- Spectrogram: Color-coded magnitude in dB
+- Colorbar: dB scale reference (right side)
+- Title: Genre and filename
+- Info Box: Duration, sample rate, FFT parameters
+
+Metadata Box (bottom-right corner):
+- Format: "Duration: 30.00s | SR: 22050 Hz | FFT: 2048"
+- Wheat-colored background with transparency
+- Rounded corners
+
+Frequency Scale Interpretation:
+- Logarithmic axis groups low frequencies together
+- Better matches human hearing perception
+- Provides more visual space for low frequencies
+- High frequencies appear compressed
+
+═══════════════════════════════════════════════════════════════════════════════
+
+SPECTROGRAM INTERPRETATION GUIDE
+════════════════════════════════════════════════════════════════════════════════
+
+Visual Patterns:
+
+Bright Areas:
+- Indicate high energy (strong frequency components)
+- Represent dominant sounds in the recording
+- Colors shift from black → purple → yellow as energy increases
+
+Dark Areas:
+- Indicate low or zero energy
+- Frequencies that are absent or very weak
+- Musical silence or pauses
+
+Vertical Bands:
+- Constant frequency across time (steady tones)
+- Tonal sounds (sustained notes, hums)
+- Musical instruments holding notes
+
+Horizontal Spreading:
+- Single impulse event spanning multiple frequencies
+- Percussion (drums, cymbals, clicks)
+- Transients and short bursts
+
+Bottom-Left Region (Low Frequencies):
+- Bass frequencies (20-250 Hz)
+- Drum kicks and bass instruments
+- Foundation of the mix
+
+Middle Region (Mid Frequencies):
+- Vocals and melodic instruments (250-2000 Hz)
+- Presence and clarity
+- Most perceptually important
+
+Top-Right Region (High Frequencies):
+- Cymbals, high hats, sibilance (2000+ Hz)
+- Brightness and sparkle
+- Details and transients
+
+Genre Characteristics:
+
+Rock/Metal:
+- Strong low-mid frequencies (drums, bass)
+- Prominent vocal presence
+- High-frequency guitars and cymbals
+
+Jazz:
+- Complex mid-range patterns
+- Improvisation shows wandering frequency content
+- Swing feel visible as rhythmic patterns
+
+Classical:
+- Smooth, sustained notes (vertical bands)
+- Wide frequency range usage
+- Clear orchestration with distinct instruments
+
+Hip-Hop:
+- Strong kick drum (very bottom)
+- Rap vocals (mid range)
+- Rhythmic patterns visible as beats
+
+Pop:
+- Compressed dynamic range (consistent brightness)
+- Strong punch in bass and vocals
+- Clear beat structure
+
+Blues:
+- Sustained bends (diagonal lines in spectrogram)
+- Harmonic richness (multiple frequency bands active)
+- Vocal vibrato
+
+Country:
+- Acoustic guitar presence
+- Clear vocal articulation
+- Twang characteristics in high frequencies
+
+Disco:
+- Steady kick drum (bottom frequency)
+- Prominent bass line
+- Regular rhythmic patterns
+
+Reggae:
+- Heavy emphasis on bass
+- Syncopated rhythm visible
+- Steady, hypnotic patterns
+
+═══════════════════════════════════════════════════════════════════════════════
+
+LOGGING
+════════════════════════════════════════════════════════════════════════════════
+
+Log file: logs/spectrogram_generation.log
+
+Contains:
+- Script start/end timestamps
+- Each file loading event
+- STFT computation details
+- Plot generation event
+- Success/failure status per genre
+- Spectrogram dimensions (frequencies × frames)
+- Summary statistics at end
+- Error messages with full context
+
+Console output:
+- Real-time progress updates
+- Processing status for each genre
+- Frequency/frame dimensions
+- Final summary with counts
+
+═══════════════════════════════════════════════════════════════════════════════
+
+EXPECTED OUTPUT EXAMPLE
+════════════════════════════════════════════════════════════════════════════════
+
+$ python generate_spectrograms.py
+
+2024-03-26 10:25:32,123 - INFO - Starting spectrogram visualization generation...
+2024-03-26 10:25:32,124 - INFO - Sample Rate: 22050 Hz
+2024-03-26 10:25:32,125 - INFO - FFT Window: 2048 | Hop Length: 512
+2024-03-26 10:25:32,234 - INFO - Loaded metadata with 1000 files
+2024-03-26 10:25:32,235 - INFO - Found 10 genres: ['blues', 'classical', ...]
+2024-03-26 10:25:32,236 - INFO - Processing genre: blues
+2024-03-26 10:25:33,450 - INFO - Loaded audio: data/genres/blues/blues.00000.au
+2024-03-26 10:25:33,451 - INFO - Computed spectrogram: shape (1025, 1448)
+2024-03-26 10:25:34,110 - INFO - Saved spectrogram: outputs/spectrograms/blues_blues.00000.png
+2024-03-26 10:25:34,111 - INFO - ✓ blues: blues_blues.00000.png
+
+[Similar output for each genre...]
+
+================================================================================
+🎵 SPECTROGRAM VISUALIZATION SUMMARY
+================================================================================
+
+📊 Statistics:
+   • Total Genres Processed: 10
+   • Successful: 10
+   • Failed: 0
+
+⚙️  Parameters:
+   • FFT Window Size: 2048
+   • Hop Length: 512
+
+📁 Output Directory:
+   C:\...\outputs\spectrograms
+
+🎼 Per-Genre Results:
+   ✓ BLUES: SUCCESS
+      Duration: 30.00s
+      Frequencies: 1025 | Frames: 1448
+      Output: blues_blues.00000.png
+   ✓ CLASSICAL: SUCCESS
+      Duration: 30.00s
+      Frequencies: 1025 | Frames: 1448
+      Output: classical_classical.00001.png
+   [... etc for all genres ...]
+
+================================================================================
+
+═══════════════════════════════════════════════════════════════════════════════
+
+TROUBLESHOOTING
+════════════════════════════════════════════════════════════════════════════════
+
+Issue: "Metadata file not found: data/dataset_metadata.csv"
+Solution: Run python dataset_loader.py first to create metadata
+
+Issue: "Failed to load audio: [file_path] - File not found"
+Solution: Ensure GTZAN dataset is properly extracted to data/genres/
+
+Issue: "Failed to compute spectrogram: ..."
+Solution: Verify audio data is valid (check with generate_waveforms.py first)
+
+Issue: Script runs but creates no images
+Solution: Check outputs/spectrograms/ folder permission (needs write access)
+
+Issue: Spectrograms show all one color (too bright or too dark)
+Solution: Audio may be very quiet or loud; data is still valid
+         Try with different audio files to compare
+
+Issue: Colorbar or title cuts off
+Solution: Matplotlib layout issue; ensure DPI and figsize are standard values
+
+═══════════════════════════════════════════════════════════════════════════════
+
+PERFORMANCE NOTES
+════════════════════════════════════════════════════════════════════════════════
+
+Processing Time:
+- Audio loading: ~1 second per sample
+- STFT computation: ~1-2 seconds per audio file
+- Plot generation: ~2-3 seconds per plot
+- Total (10 genres): ~35-50 seconds
+
+Memory Usage:
+- Per audio file: ~2-3 MB
+- STFT computation: ~10-15 MB per file (temporary)
+- Per saved PNG: ~100-200 KB
+- Total runtime peak: ~200-300 MB
+
+═══════════════════════════════════════════════════════════════════════════════
+
+CUSTOMIZATION OPTIONS
+════════════════════════════════════════════════════════════════════════════════
+
+To modify script behavior, edit these variables in generate_spectrograms.py:
+
+SAMPLE_RATE = 22050        # Change audio sample rate
+OUTPUT_DIR = Path(...)     # Change output folder
+DPI = 100                  # Change image resolution
+FIGSIZE = (14, 8)         # Change plot dimensions
+N_FFT = 2048              # Change FFT window size
+HOP_LENGTH = 512          # Change hop length (affects time resolution)
+
+Frequency scale options:
+- 'linear': Linear frequency (default is log)
+- 'log': Logarithmic frequency
+- 'mel': Mel-scale frequency (perceptually uniform)
+
+Color maps: 'magma', 'viridis', 'plasma', 'inferno', 'hot', 'cool', etc.
+
+═══════════════════════════════════════════════════════════════════════════════
+
+ADVANCED: FFT PARAMETERS EXPLAINED
+════════════════════════════════════════════════════════════════════════════════
+
+n_fft (FFT Window Size):
+- Default: 2048 samples
+- Frequency resolution: sr / n_fft (11 Hz for 22050 Hz SR, 2048 FFT)
+- Larger n_fft: Better frequency resolution, worse time resolution
+- Smaller n_fft: Worse frequency resolution, better time resolution
+
+hop_length (Hop Length):
+- Default: 512 samples
+- Time between successive frames
+- hop_length = n_fft / 4 gives 75% overlap (standard)
+- Larger hop_length: More time resolution loss, faster computation
+- Smaller hop_length: More computational cost, better time tracking
+
+Trade-off (Heisenberg Uncertainty):
+- Can't have both perfect time and frequency resolution
+- Larger n_fft prioritizes frequency detail
+- Smaller n_fft prioritizes temporal accuracy
+- Standard choice (2048/512) balances both for music
+
+═══════════════════════════════════════════════════════════════════════════════
+
+INTEGRATION WITH OTHER COMPONENTS
+════════════════════════════════════════════════════════════════════════════════
+
+Spectrogram Visualization integrates with:
+- Step 1: Uses dataset_metadata.csv from dataset_loader.py
+- Step 2: Can visualize extracted features
+- Step 3: Useful for analyzing genre-specific spectral characteristics
+- Step 4: Can overlay beat markers on spectrograms (future)
+- Waveforms: Complementary to waveform visualization
+- Streamlit App: Can display spectrograms in web interface
+
+═══════════════════════════════════════════════════════════════════════════════
+
+COMPARISON: WAVEFORM VS SPECTROGRAM
+════════════════════════════════════════════════════════════════════════════════
+
+Waveform (Time Domain):
+- Shows: Amplitude over time
+- Axis: Time vs Amplitude
+- Use: See overall signal shape, dynamics, transients
+- Best for: Understanding signal strength and timing
+
+Spectrogram (Time-Frequency Domain):
+- Shows: Frequency content over time (energy distribution)
+- Axis: Time vs Frequency (magnitude as color)
+- Use: Analyze which frequencies are present when
+- Best for: Understanding spectral character and genre differences
+
+Together they provide:
+- Complete signal analysis (time + frequency domains)
+- Genre-specific characteristics
+- Feature distribution visualization
+- Educational tools for audio analysis
+
+═══════════════════════════════════════════════════════════════════════════════

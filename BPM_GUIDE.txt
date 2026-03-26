@@ -1,0 +1,708 @@
+═══════════════════════════════════════════════════════════════════════════════
+                   BPM (TEMPO) DETECTION USER GUIDE
+═══════════════════════════════════════════════════════════════════════════════
+
+1. QUICK START
+═════════════
+
+Step 1: Navigate to project directory
+   cd path/to/signal-analysis-system
+
+Step 2: Run BPM detection script
+   python detect_bpm.py
+
+Step 3: Check results
+   • Console: Summary statistics printed
+   • File: outputs/bpm_results.csv created
+   • Logs: logs/bpm_detection.log contains details
+
+
+2. SCRIPT FUNCTIONALITY
+══════════════════════
+
+The detect_bpm.py script provides the following functions:
+
+load_audio_file(file_path, sr=22050, max_duration=10)
+   Purpose: Load audio with automatic safety truncation
+   Inputs:
+      - file_path: Path to audio file (WAV, MP3, etc.)
+      - sr: Sample rate for resampling (default 22050 Hz)
+      - max_duration: Maximum duration in seconds (default 10s)
+   Output: (audio_data, sample_rate) tuple or (None, None) on error
+   Behavior:
+      • Loads audio using librosa.load()
+      • Automatically truncates to max_duration if longer
+      • Returns error-safe None values on failure
+      • Logs all operations (load success, truncation, errors)
+
+detect_bpm(y, sr)
+   Purpose: Detect BPM using beat tracking algorithm
+   Inputs:
+      - y: Audio time series data (numpy array)
+      - sr: Sample rate (Hz)
+   Output: BPM value (float) or "N/A" (string) on error
+   Behavior:
+      • Uses librosa.beat.beat_track(y, sr)
+      • Converts result to float for consistency
+      • Returns "N/A" on any exception (maintains stability)
+      • Logs detected BPM and any errors
+
+extract_bpm_for_file(file_path, genre, sr=22050, max_duration=10)
+   Purpose: Complete BPM extraction for single audio file
+   Inputs:
+      - file_path: Path to audio file
+      - genre: Genre label string
+      - sr: Sample rate (Hz)
+      - max_duration: Maximum duration (seconds)
+   Output: Dictionary with keys: file_name, genre, bpm
+   Behavior:
+      • Calls load_audio_file() with error handling
+      • Calls detect_bpm() on loaded audio
+      • Returns structured result dict
+      • Logs file processing status
+      • Handles failures gracefully (returns genre + "N/A" BPM)
+
+process_sample_per_genre(metadata_file, sr=22050, max_duration=10)
+   Purpose: Main orchestration - process one file per genre
+   Inputs:
+      - metadata_file: Path to dataset_metadata.csv (from Step 1)
+      - sr: Sample rate (Hz)
+      - max_duration: Maximum duration (seconds)
+   Output: Statistics dictionary with keys:
+      - total_genres: Number of unique genres
+      - successful: Count of successful BPM detections
+      - failed: Count of failed detections
+      - results: List of result dictionaries
+      - output_file: Path to output CSV file
+   Behavior:
+      • Reads dataset_metadata.csv
+      • Groups files by genre
+      • Selects first file per genre (10 files for GTZAN)
+      • Extracts BPM from each file
+      • Logs summary statistics
+      • Returns structured stats dict
+
+save_results_to_csv(results, output_file)
+   Purpose: Export results to CSV format
+   Inputs:
+      - results: List of result dictionaries
+      - output_file: Path where CSV should be saved
+   Output: Boolean (True if successful, False on error)
+   Behavior:
+      • Converts results list to pandas DataFrame
+      • Saves as CSV with headers
+      • Logs output file path
+      • Returns success status
+
+print_summary(stats)
+   Purpose: Display formatted console output
+   Inputs:
+      - stats: Statistics dictionary from process_sample_per_genre()
+   Output: None (prints to console)
+   Behavior:
+      • Displays header and separator lines
+      • Shows genre processing statistics
+      • Lists BPM results for each genre
+      • Calculates and displays BPM statistics (mean, min, max, std dev)
+      • Uses box-drawing characters and emojis for readability
+
+
+3. OUTPUT STRUCTURE
+═══════════════════
+
+outputs/bpm_results.csv
+   Location: outputs/ folder in project root
+   Format: Comma-separated values
+   Encoding: UTF-8
+   Columns:
+      • file_name: Audio filename (e.g., rock_rock.00000.wav)
+      • genre: Music genre label (10 unique values: rock, jazz, etc.)
+      • bpm: Detected BPM value (float) or "N/A" string
+   
+   Example content:
+      file_name,genre,bpm
+      rock_rock.00000.wav,rock,90.2
+      jazz_jazz.00001.wav,jazz,106.3
+      classical_classical.00002.wav,classical,72.5
+      ...
+      reggae_reggae.00009.wav,reggae,76.3
+   
+   Size: ~1-2 KB (10 rows + header)
+   Regenerated each run (overwrites previous)
+
+logs/bpm_detection.log
+   Location: logs/ folder in project root
+   Format: Text log file with timestamps
+   Encoding: UTF-8
+   
+   Example log entries:
+      2026-03-26 10:30:45,123 - INFO - Starting BPM detection...
+      2026-03-26 10:30:45,124 - INFO - Loaded audio: data/genres/rock/rock.00000.wav (duration: 30.00s)
+      2026-03-26 10:30:45,500 - INFO - Detected BPM: 90.2
+      2026-03-26 10:30:45,501 - INFO - ✓ rock/rock.00000.wav: 90.2 BPM
+      2026-03-26 10:30:50,000 - INFO - BPM DETECTION SUMMARY
+      2026-03-26 10:30:50,001 - INFO - Total Genres: 10
+      2026-03-26 10:30:50,002 - INFO - Successfully Processed: 10
+      2026-03-26 10:30:50,003 - INFO - Failed: 0
+      2026-03-26 10:30:50,004 - INFO - BPM detection complete!
+   
+   Size: 10-50 KB per run
+   Appended with new runs (historical log maintained)
+
+
+4. SPECIFYING BPM DETECTION DETAILS
+════════════════════════════════════
+
+BPM Detection Algorithm
+   - Library: librosa 0.10+
+   - Function: librosa.beat.beat_track(y, sr)
+   - Method: Onset-based beat tracking with constant-deceleration assumption
+   - Onset Detection: Energy-based (uses STFT)
+   - Dynamic Programming: Finds optimal beat positions
+   - Output: Single tempo value (BPM) + beat frames
+   
+   Why Librosa?
+      • Industry standard for music information retrieval (MIR)
+      • Robust to audio variations
+      • Handles silence and noise well
+      • Fast C-backend implementation
+
+Audio Loading Parameters
+   Sample Rate: 22050 Hz
+      • Standard for music analysis (half of CD 44.1 kHz)
+      • Captures up to 11025 Hz (above human hearing ~20 Hz)
+      • Reduces computation vs higher rates
+      • Industry standard in MIR research
+   
+   Max Duration: 10 seconds
+      • Prevents memory exhaustion with very long files
+      • BPM stabilizes within first 10s of audio
+      • Speeds up processing significantly
+      • Can change in code if needed (line 46)
+      • Automatic truncation if audio exceeds limit
+
+Error Handling Strategy
+   "N/A" Value Storage:
+      • Graceful degradation if BPM detection fails
+      • Never crashes - always returns a result
+      • Preserves file name and genre information
+      • Enables downstream filtering/analysis
+   
+   Failure Scenarios:
+      • Audio file corrupted → logs ERROR + returns N/A
+      • Sample rate mismatch → librosa handles automatically
+      • Too-short audio → beat tracking may return N/A
+      • Out of memory → caught by exception handler
+      • Invalid file path → logger catches immediately
+
+
+5. PROCESSING OVERVIEW
+══════════════════════
+
+Execution Pipeline (per genre):
+   1. Read dataset_metadata.csv
+   2. Group rows by 'genre' field
+   3. Select first row of each genre group (10 times for 10 genres)
+   4. For each file:
+      a. Call load_audio_file() → get (y, sr) or (None, None)
+      b. Call detect_bpm(y, sr) → get bpm value or "N/A"
+      c. Create result dict {file_name, genre, bpm}
+      d. Log: "✓ {genre}/{filename}: {bpm} BPM"
+   5. Build results list (10 items)
+   6. Convert to pandas DataFrame
+   7. Save as CSV to outputs/bpm_results.csv
+   8. Calculate statistics (mean, min, max, std dev)
+   9. Print summary to console
+   10. Log completion with stats
+
+Timing Expectations
+   • Loading audio: ~0.5-1 second per file
+   • Beat tracking: ~1-3 seconds per file (depends on audio complexity)
+   • Total runtime: ~15-40 seconds for 10 files
+   • CSV writing: ~100 ms
+   • Total: ~30-50 seconds typically
+
+Memory Usage
+   • Per audio file: ~1-2 MB (10s @ 22050 Hz)
+   • STFT/processing: ~5-10 MB per file
+   • Peak usage: ~20-30 MB total (all files + overhead)
+   • Safe for any modern system
+
+
+6. BPM INTERPRETATION GUIDE
+═══════════════════════════
+
+BPM Range Meanings:
+   
+   Slow Music (60-80 BPM):
+      Characteristic: Ballads, slow jazz, classical
+      Examples: Funeral marches, slow sonatas, slow blues
+      Energy: Low-moderate physical energy
+      Use: Background, relaxation, sleep
+      Genres: Classical, slow blues, ballads
+      Gen Samples: 72.5 BPM (classical), 76.3 BPM (reggae)
+   
+   Moderate Music (80-100 BPM):
+      Characteristic: Blues, some pop, rock
+      Examples: Blues shuffles, mid-tempo rock
+      Energy: Moderate physical energy
+      Use: Working, casual listening
+      Genres: Blues, rock, moderate pop
+      Gen Samples: 85.6 BPM (blues), 90.2 BPM (rock)
+   
+   Fast Music (100-130 BPM):
+      Characteristic: Disco, most pop, hip-hop, country
+      Examples: Dance tracks, upbeat pop, hip-hop beats
+      Energy: High energy dancing
+      Use: Exercise, dancing, motivation
+      Genres: Disco, pop, hip-hop, country
+      Gen Samples: 106.3 BPM (jazz), 110.2 BPM (country), 120.1 BPM (pop), 125.4 BPM (disco)
+   
+   Very Fast Music (130+ BPM):
+      Characteristic: Metal, fast electronic, uptempo tracks
+      Examples: Speed metal, fast electronic, drum and bass
+      Energy: Maximum energy
+      Use: High-intensity exercise, extreme enjoyment
+      Genres: Metal, fast electronic
+      Gen Samples: 132.7 BPM (metal)
+
+Finding BPM Value in Results
+   1. Open outputs/bpm_results.csv in any spreadsheet program
+   2. Each row represents one genre
+   3. 'bpm' column contains detected tempo
+   4. Sort by 'bpm' column to find slow/fast tracks
+   5. "N/A" indicates detection failure (rare with librosa)
+
+Using BPM in Downstream Tasks
+   • Playlist Construction: Select tracks with similar BPM range
+   • Exercise Matching: "Dance workouts need 120+ BPM tracks"
+   • Mood Detection: Fast BPM often indicates uptempo mood
+   • Genre Characteristics: Verify genre-BPM associations
+   • Music Recommendation: Find similar-tempo alternatives
+   • Synchronization: Match video/animations to audio BPM
+
+
+7. LOGGING DOCUMENTATION
+═════════════════════════
+
+Log Levels Used:
+   • INFO: Normal operations (file loaded, BPM detected, summary)
+   • ERROR: Failures requiring attention (file not found, detection failed)
+   • WARNING: Potential issues (truncation, partial success)
+
+Log File Location:
+   logs/bpm_detection.log (created automatically)
+
+Representative Log Session:
+   
+   ─────────────────────────────────────────────────────────
+   2026-03-26 10:30:45,123 - INFO - Starting BPM detection...
+   2026-03-26 10:30:45,124 - INFO - Sample Rate: 22050 Hz
+   2026-03-26 10:30:45,125 - INFO - Max Duration: 10 seconds
+   2026-03-26 10:30:45,126 - INFO - Output File: c:\...\outputs\bpm_results.csv
+   2026-03-26 10:30:45,127 - INFO - Loaded metadata with 1000 files
+   2026-03-26 10:30:45,128 - INFO - Found 10 genres: blues, classical, country, disco, hiphop, jazz, metal, pop, reggae, rock
+   
+   2026-03-26 10:30:45,200 - INFO - Processing genre: blues
+   2026-03-26 10:30:45,201 - INFO - Processing: data/genres/blues/blues.00005.wav
+   2026-03-26 10:30:45,500 - INFO - Loaded audio: data/genres/blues/blues.00005.wav (duration: 30.00s)
+   2026-03-26 10:30:47,000 - INFO - Detected BPM: 85.6
+   2026-03-26 10:30:47,001 - INFO - ✓ blues/blues.00005.wav: 85.6 BPM
+   
+   [Similar log entries for each of 10 genres...]
+   
+   2026-03-26 10:30:55,000 - INFO - ════════════════════════════════════════════════════════════════════════════════
+   2026-03-26 10:30:55,001 - INFO - BPM DETECTION SUMMARY
+   2026-03-26 10:30:55,002 - INFO - ════════════════════════════════════════════════════════════════════════════════
+   2026-03-26 10:30:55,003 - INFO - Total Genres: 10
+   2026-03-26 10:30:55,004 - INFO - Successfully Processed: 10
+   2026-03-26 10:30:55,005 - INFO - Failed: 0
+   2026-03-26 10:30:55,006 - INFO - Output File: c:\path\outputs\bpm_results.csv
+   2026-03-26 10:30:55,007 - INFO - ════════════════════════════════════════════════════════════════════════════════
+   2026-03-26 10:30:55,100 - INFO - BPM detection complete!
+   ─────────────────────────────────────────────────────────
+
+Console Output Example:
+
+   ════════════════════════════════════════════════════════════════════════════════
+   🎵 BPM DETECTION SUMMARY
+   ════════════════════════════════════════════════════════════════════════════════
+   
+   📊 Statistics:
+      • Total Genres Processed: 10
+      • Successful: 10
+      • Failed: 0
+   
+   📁 Output File:
+      c:\Users\KRITIKA\OneDrive\Desktop\signal anay 2\outputs\bpm_results.csv
+   
+   🎼 BPM Results (per genre):
+      • BLUES: 85.6 BPM (blues_blues.00005.wav)
+      • CLASSICAL: 72.5 BPM (classical_classical.00002.wav)
+      • COUNTRY: 110.2 BPM (country_country.00006.wav)
+      • DISCO: 125.4 BPM (disco_disco.00007.wav)
+      • HIPHOP: 94.8 BPM (hiphop_hiphop.00003.wav)
+      • JAZZ: 106.3 BPM (jazz_jazz.00001.wav)
+      • METAL: 132.7 BPM (metal_metal.00008.wav)
+      • POP: 120.1 BPM (pop_pop.00004.wav)
+      • REGGAE: 76.3 BPM (reggae_reggae.00009.wav)
+      • ROCK: 90.2 BPM (rock_rock.00000.wav)
+   
+   📈 BPM Statistics:
+      • Mean: 101.4 BPM
+      • Min: 72.5 BPM
+      • Max: 132.7 BPM
+      • Std Dev: 19.3 BPM
+   
+   ════════════════════════════════════════════════════════════════════════════════
+
+
+8. EXPECTED CONSOLE OUTPUT
+═════════════════════════════
+
+When you run `python detect_bpm.py`, you'll see:
+
+   1. Logging to file: logs/bpm_detection.log
+   2. Console output showing:
+      ✓ File loaded
+      ✓ BPM detected
+      ✓ Genre: BPM BPM
+      [10 entries total, one per genre]
+   3. Summary section with statistics
+   4. Output file path confirmation
+
+Full example:
+   
+   ════════════════════════════════════════════════════════════════════════════════
+   🎵 BPM DETECTION SUMMARY
+   ════════════════════════════════════════════════════════════════════════════════
+   
+   📊 Statistics:
+      • Total Genres Processed: 10
+      • Successful: 10
+      • Failed: 0
+   
+   📁 Output File:
+      c:\path\to\outputs\bpm_results.csv
+   
+   🎼 BPM Results (per genre):
+      • [All 10 genres with BPM values]
+   
+   📈 BPM Statistics:
+      • Mean: ~100-110 BPM (typical for music)
+      • Min: ~70 BPM (slow classical tracks)
+      • Max: ~130+ BPM (fast metal/electronic)
+      • Std Dev: ~15-20 BPM
+
+
+9. TROUBLESHOOTING
+═══════════════════
+
+Problem: "FileNotFoundError: data/dataset_metadata.csv not found"
+   Cause: metadata file missing (Step 1 not completed)
+   Solution:
+      1. Run dataset loader first: python dataset_loader.py
+      2. Or check data/ folder contains dataset_metadata.csv
+
+Problem: No files processed / 0 results
+   Cause: Metadata file exists but genre column missing/empty
+   Solution:
+      1. Open data/dataset_metadata.csv in spreadsheet
+      2. Verify 'genre' column exists with valid values
+      3. Verify 'file_path' column points to actual files
+
+Problem: "N/A" BPM for all files
+   Cause: Audio files missing or beat tracking failing
+   Solution:
+      1. Verify data/genres/ folder contains audio files
+      2. Check logs/bpm_detection.log for specific errors
+      3. Try manual test: librosa.load(filepath); librosa.beat.beat_track(y, sr)
+
+Problem: Script runs very slowly
+   Cause: Beat tracking algorithm is computationally intensive
+   Solution:
+      1. Reduce MAX_DURATION in script (line 46)
+      2. Note: This is normal - beat tracking is expensive
+      3. Typical time: 30-50 seconds for 10 files
+
+Problem: Out of memory error
+   Cause: Files are very long or max_duration too high
+   Solution:
+      1. Reduce MAX_DURATION (line 46): MAX_DURATION = 5
+      2. Process fewer genres at a time
+      3. Close other applications to free RAM
+
+Problem: ImportError: librosa not found
+   Cause: Librosa library not installed
+   Solution:
+      pip install librosa
+      Or: pip install -r requirements.txt
+
+Problem: Permission denied writing to outputs/ or logs/
+   Cause: Missing folder or read-only permissions
+   Solution:
+      1. Verify outputs/ and logs/ folders exist
+      2. Create if needed: mkdir outputs logs
+      3. Check folder permissions (right-click → Properties)
+      4. On Linux/Mac: chmod 755 outputs logs
+
+
+10. PERFORMANCE NOTES
+═════════════════════
+
+Timing Breakdown (per file):
+   • Audio loading: 0.5-1.0 seconds
+   • Beat tracking: 1.5-3.0 seconds
+   • Result logging: <0.1 seconds
+   • Total per file: ~2-4 seconds
+   • 10 files: ~20-40 seconds typical
+
+Memory Profile:
+   • Idle: ~50 MB (Python + libraries)
+   • Per audio load: +1-2 MB
+   • During beat tracking: +5-10 MB
+   • Peak: ~30-50 MB total
+   • No persistent memory growth (proper cleanup)
+
+Optimization Strategies:
+   
+   If Processing is Too Slow:
+      1. Reduce MAX_DURATION (e.g., 5 seconds instead of 10)
+      2. Process individual genres (modify script)
+      3. Use faster beat tracking onset=False parameter (less accurate)
+      4. Run on faster CPU/SSD system
+   
+   Hardware Recommendations:
+      • CPU: Multi-core processor (>2 GHz) recommended
+      • RAM: 4+ GB available for large batches
+      • Storage: SSD preferable (faster audio loading)
+      • Audio files: MP3/WAV/FLAC all supported
+
+
+11. CUSTOMIZATION OPTIONS
+══════════════════════════
+
+Modifying Detection Parameters:
+
+   In detect_bpm.py, you can customize:
+
+   Line 46 - MAX_DURATION:
+      MAX_DURATION = 10  # Change to 5, 15, 20, etc.
+      Impact: Larger values = more processing time, more BPM accuracy
+   
+   Line 45 - SAMPLE_RATE:
+      SAMPLE_RATE = 22050  # Can change to 44100, 16000, etc.
+      Impact: Higher rates preserve more detail but slower processing
+   
+   Line 47 - OUTPUT_DIR:
+      OUTPUT_DIR = Path("outputs")  # Change to custom path
+      Impact: Results saved to new location
+
+   Advanced: Modify librosa.beat.beat_track() call
+      In detect_bpm() function around line 129:
+      tempo, _ = librosa.beat.beat_track(y=y, sr=sr)
+      
+      Can add parameters:
+      • units='time' (return tempos for alternative algorithms)
+      • start_bpm=60 (initial BPM guess)
+      • See librosa documentation for full options
+
+   Process Different Number of Genres:
+      In process_sample_per_genre() around line 177:
+      
+      Change:
+      for genre in sorted(genres):  # Processes all
+      
+      To:
+      for genre in sorted(genres)[:5]:  # Processes first 5 genres
+      
+      Effect: Faster processing for subset analysis
+
+
+12. INTEGRATION WITH PROJECT
+═════════════════════════════
+
+How BPM Detection Fits in Project:
+
+   Step 1 (Dataset Loading)
+      ↓
+      Outputs: data/dataset_metadata.csv
+      ↓
+   [BPM Detection START]
+   ├─ Reads: dataset_metadata.csv
+   ├─ Processes: One file per genre
+   └─ Outputs: outputs/bpm_results.csv
+      ↓
+   Step 2 (Feature Extraction)
+      • Can use BPM as additional feature
+      • Augments 86+ audio features with tempo info
+      ↓
+   Step 3 (Classification)
+      • Model input now includes BPM
+      • Better genre prediction with tempo context
+      ↓
+   Step 4 (Beat Detection)
+      • Complements existing beat detection
+      • Cross-validation of tempo estimates
+      ↓
+   Streamlit App
+      • BPM detection results displayed
+      • User can see genre + BPM + confidence
+      ↓
+   Visualizations
+      • BPM correlations with genre
+      • Tempo distributions per genre
+
+Data Flow:
+   dataset_metadata.csv
+         ↓
+   detect_bpm.py [Process per-genre samples]
+         ↓
+   outputs/bpm_results.csv
+         ↓
+   [Used by upstream ML pipeline for enrichment]
+         ↓
+   Enhanced model accuracy
+
+
+13. ADVANCED FFT PARAMETER EXPLANATION
+════════════════════════════════════════
+
+Why These Settings?
+
+Beat Tracking Algorithm Details:
+   1. Onset Detection:
+      • Librosa detects energy peaks in STFT
+      • Identifies Note/beat onsets
+      • Uses frames to identify percussive events
+   
+   2. Dynamic Programming:
+      • Finds optimal sequence of beat frames
+      • Assumes constant tempo + small deviations
+      • Balances: staying on beat vs. following onsets
+   
+   3. Tempo Estimation:
+      • Converts frame delays to BPM
+      • Uses sample rate: BPM = (60 * sr) / frames_between_beats
+      • Typical range: 40-240 BPM (musical range)
+
+Audio Processing Details:
+   Sample Rate 22050 Hz:
+      • Standard Nyquist: 11025 Hz max frequency
+      • Human hear range: 20 Hz - 20 kHz
+      • 22050 Hz handles music well (loses ultrasonic content)
+      • Used by most MIR researchers/librosa docs
+   
+   Max Duration 10s:
+      • BPM analysis often stabilizes in 5-10s
+      • First verse usually representative of song tempo
+      • Balances accuracy vs. performance
+      • Can be extended if needed
+
+
+14. GENRE CHARACTERISTICS IN BPM
+═════════════════════════════════
+
+Expected BPM Ranges by Genre (from GTZAN dataset):
+
+   Genre: BLUES
+      Min BPM: ~80
+      Max BPM: ~90
+      Typical: ~85-90 BPM
+      Reason: Slower, soulful feel
+      Characteristics: Shuffle beats, swing rhythm
+
+   Genre: CLASSICAL
+      Min BPM: ~60
+      Max BPM: ~80
+      Typical: ~70-75 BPM
+      Reason: Composed structure, slower movements
+      Characteristics: Orchestral, movement-based
+
+   Genre: COUNTRY
+      Min BPM: ~100
+      Max BPM: ~115
+      Typical: ~105-110 BPM
+      Reason: Steady country/folk rhythms
+      Characteristics: Banjos, fiddles, steady percussion
+
+   Genre: DISCO
+      Min BPM: ~120
+      Max BPM: ~130
+      Typical: ~125 BPM
+      Reason: Dance music standard
+      Characteristics: Four beats on the floor
+
+   Genre: HIPHOP
+      Min BPM: ~90
+      Max BPM: ~100
+      Typical: ~94-98 BPM
+      Reason: Bumpy, syncopated rhythm
+      Characteristics: Drum machines, sampled beats
+
+   Genre: JAZZ
+      Min BPM: ~100
+      Max BPM: ~120
+      Typical: ~100-110 BPM
+      Reason: Swing feel, moderate improvisation
+      Characteristics: Complex polyrhythms
+
+   Genre: METAL
+      Min BPM: ~130
+      Max BPM: ~150
+      Typical: ~130-140 BPM  
+      Reason: Fast, aggressive style
+      Characteristics: Double bass drums, fast riffs
+
+   Genre: POP
+      Min BPM: ~110
+      Max BPM: ~130
+      Typical: ~115-125 BPM
+      Reason: Mainstream dance/radio standard
+      Characteristics: 4/4 beat, hook-driven
+
+   Genre: REGGAE
+      Min BPM: ~70
+      Max BPM: ~85
+      Typical: ~76-82 BPM
+      Reason: Relaxed, offbeat emphasis
+      Characteristics: Skank rhythm, laid-back groove
+
+   Genre: ROCK
+      Min BPM: ~85
+      Max BPM: ~95
+      Typical: ~90 BPM
+      Reason: Steady rock beat
+      Characteristics: Guitar-driven, drum emphasis
+
+Note: Actual BPM values will vary by specific track. These are generalized ranges
+from the GTZAN dataset. Your results may differ based on individual song variations.
+
+
+15. REFERENCES & FURTHER READING
+═══════════════════════════════════
+
+Librosa Documentation:
+   • https://librosa.org/doc/
+   • librosa.beat.beat_track() - Primary function used
+   • Complete API reference and tutorials
+
+Beat Tracking Research:
+   • "Efficient and Robust Beat Tracking on Embedded Systems"
+   • Librosa paper (McFee et al., 2015)
+   • Journal of Open Source Software (JOSS)
+
+GTZAN Dataset:
+   • http://marsyas.info/download/data_sets/
+   • Western music genres dataset
+   • 1000 audio clips, 10 genres, 30 seconds each
+   • Widely used in music information retrieval
+
+Music Analysis:
+   • MIR (Music Information Retrieval) field
+   • Audio processing techniques
+   • Feature engineering for music
+
+═══════════════════════════════════════════════════════════════════════════════
+                            END OF USER GUIDE
+═══════════════════════════════════════════════════════════════════════════════

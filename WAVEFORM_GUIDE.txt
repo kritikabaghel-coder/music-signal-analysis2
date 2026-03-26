@@ -1,0 +1,228 @@
+WAVEFORM VISUALIZATION - SETUP & USAGE GUIDE
+
+═══════════════════════════════════════════════════════════════════════════════
+
+OVERVIEW
+════════════════════════════════════════════════════════════════════════════════
+
+generate_waveforms.py creates high-resolution waveform plots for audio analysis.
+- Processes 1 sample per genre (10 total images)
+- Saves PNG images to outputs/waveforms/
+- Includes automatic logging and error handling
+- Displays metadata (duration, sample rate) on each plot
+
+═══════════════════════════════════════════════════════════════════════════════
+
+QUICK START
+════════════════════════════════════════════════════════════════════════════════
+
+1. Ensure dataset is loaded:
+   python dataset_loader.py
+
+2. Generate waveforms:
+   python generate_waveforms.py
+
+3. View results:
+   Check outputs/waveforms/ folder for PNG images
+
+═══════════════════════════════════════════════════════════════════════════════
+
+SCRIPT FUNCTIONALITY
+════════════════════════════════════════════════════════════════════════════════
+
+File: generate_waveforms.py (400+ lines)
+
+Functions:
+
+1. load_audio_file(file_path, sr=22050)
+   - Loads audio using librosa
+   - Default sample rate: 22050 Hz
+   - Returns: (audio_array, sample_rate)
+   - Error handling: Returns (None, None) on failure
+
+2. generate_waveform_plot(y, sr, file_path, output_path)
+   - Creates matplotlib figure
+   - Plots time-domain waveform
+   - Adds metadata box (duration, sample rate)
+   - Saves PNG to output_path
+   - Returns: True/False (success status)
+
+3. process_sample_per_genre(metadata_file)
+   - Main orchestration function
+   - Reads dataset_metadata.csv
+   - Processes 1 file per genre
+   - Returns statistics dictionary
+   - Includes comprehensive error handling
+
+4. print_summary(stats)
+   - Formats and prints processing summary
+   - Shows success/failure counts
+   - Lists output files
+
+═══════════════════════════════════════════════════════════════════════════════
+
+OUTPUT STRUCTURE
+════════════════════════════════════════════════════════════════════════════════
+
+outputs/waveforms/
+├── rock_rock.00000.png
+├── jazz_jazz.00001.png
+├── classical_classical.00002.png
+├── hiphop_hiphop.00003.png
+├── pop_pop.00004.png
+├── blues_blues.00005.png
+├── country_country.00006.png
+├── disco_disco.00007.png
+├── metal_metal.00008.png
+└── reggae_reggae.00009.png
+
+Filename format: {genre}_{audio_filename}.png
+
+═══════════════════════════════════════════════════════════════════════════════
+
+PLOT DETAILS
+════════════════════════════════════════════════════════════════════════════════
+
+Each waveform plot includes:
+
+Visual Elements:
+- Time-domain waveform (blue line)
+- Grid for reference
+- Title with genre and filename
+- Axes labels (Time in seconds, Amplitude)
+
+Metadata Box (bottom-right):
+- Audio duration (seconds)
+- Sample rate (Hz)
+
+Image Specifications:
+- Resolution: 100 DPI
+- Format: PNG
+- Size: ~14" × 6" display size
+- Color: Steel blue waveform on white background
+
+═══════════════════════════════════════════════════════════════════════════════
+
+LOGGING
+════════════════════════════════════════════════════════════════════════════════
+
+Log file: logs/waveform_generation.log
+
+Contains:
+- Script start/end timestamps
+- Each file loading event
+- Each plot generation event
+- Success/failure status per genre
+- Summary statistics
+- Error messages with full context
+
+Console output:
+- Real-time progress updates
+- Processing status for each genre
+- Final summary with counts
+
+═══════════════════════════════════════════════════════════════════════════════
+
+EXPECTED OUTPUT EXAMPLE
+════════════════════════════════════════════════════════════════════════════════
+
+$ python generate_waveforms.py
+
+2024-03-26 10:15:32,123 - INFO - Starting waveform visualization generation...
+2024-03-26 10:15:32,124 - INFO - Sample Rate: 22050 Hz
+2024-03-26 10:15:32,125 - INFO - Output Directory: C:\...\outputs\waveforms
+
+2024-03-26 10:15:32,234 - INFO - Loaded metadata with 1000 files
+2024-03-26 10:15:32,235 - INFO - Found 10 genres: ['blues', 'classical', ...]
+2024-03-26 10:15:32,236 - INFO - Processing genre: blues
+2024-03-26 10:15:33,450 - INFO - Loaded audio: data/genres/blues/blues.00000.au
+2024-03-26 10:15:33,451 - INFO - Saved waveform: outputs/waveforms/blues_blues.00000.png
+2024-03-26 10:15:33,452 - INFO - ✓ blues: blues_blues.00000.png
+
+[Similar output for each genre...]
+
+================================================================================
+🎵 WAVEFORM VISUALIZATION SUMMARY
+================================================================================
+
+📊 Statistics:
+   • Total Genres Processed: 10
+   • Successful: 10
+   • Failed: 0
+
+📁 Output Directory:
+   C:\...\outputs\waveforms
+
+🎼 Per-Genre Results:
+   ✓ BLUES: SUCCESS
+      Duration: 30.00s
+      Output: blues_blues.00000.png
+   ✓ CLASSICAL: SUCCESS
+      Duration: 30.00s
+      Output: classical_classical.00001.png
+   [... etc for all genres ...]
+
+================================================================================
+
+═══════════════════════════════════════════════════════════════════════════════
+
+TROUBLESHOOTING
+════════════════════════════════════════════════════════════════════════════════
+
+Issue: "Metadata file not found: data/dataset_metadata.csv"
+Solution: Run python dataset_loader.py first to create metadata
+
+Issue: "Failed to load audio: [file_path] - File not found"
+Solution: Ensure GTZAN dataset is properly extracted to data/genres/
+
+Issue: "No files found for genre: [genre_name]"
+Solution: Check dataset integrity, may need to re-extract
+
+Issue: Script runs but creates no images
+Solution: Check outputs/waveforms/ folder permission (needs write access)
+
+Issue: Empty plots or incorrect waveforms
+Solution: Verify audio file is not corrupted (try loading manually in Python)
+
+═══════════════════════════════════════════════════════════════════════════════
+
+PERFORMANCE NOTES
+════════════════════════════════════════════════════════════════════════════════
+
+Processing Time:
+- Audio loading: ~1 second per sample
+- Plot generation: ~2-3 seconds per plot
+- Total (10 genres): ~30-40 seconds
+
+Memory Usage:
+- Per audio file: ~2-3 MB
+- Per saved PNG: ~50-100 KB
+- Total runtime peak: ~100-200 MB
+
+═══════════════════════════════════════════════════════════════════════════════
+
+CUSTOMIZATION OPTIONS
+════════════════════════════════════════════════════════════════════════════════
+
+To modify script behavior, edit these variables in generate_waveforms.py:
+
+SAMPLE_RATE = 22050        # Change audio sample rate
+OUTPUT_DIR = Path(...)     # Change output folder
+DPI = 100                  # Change image resolution
+FIGSIZE = (14, 6)         # Change plot dimensions
+
+Colors and styling: Modify ax.plot() and plt.style.use()
+
+═══════════════════════════════════════════════════════════════════════════════
+
+INTEGRATION WITH OTHER COMPONENTS
+════════════════════════════════════════════════════════════════════════════════
+
+Waveform Visualization integrates with:
+- Step 1: Uses dataset_metadata.csv from dataset_loader.py
+- Step 2: Can be extended for feature visualization
+- Step 3: Useful for analyzing genre-specific characteristics
+- Streamlit App: Can display waveforms in web interface
+- Logging: Uses same logging configuration as other scripts
+
+═══════════════════════════════════════════════════════════════════════════════

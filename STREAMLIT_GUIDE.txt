@@ -1,0 +1,148 @@
+STREAMLIT APP - SETUP & EXECUTION GUIDE
+
+═══════════════════════════════════════════════════════════════════════════════
+
+REQUIREMENTS
+════════════════════════════════════════════════════════════════════════════════
+
+Before running the app, ensure you have:
+1. genre_model.joblib - Trained genre classification model
+2. label_encoder.pkl - Label encoder for genres
+3. features.csv - Training dataset with file paths, genres, and features
+4. All audio files referenced in features.csv (for recommendations)
+
+INSTALLATION
+════════════════════════════════════════════════════════════════════════════════
+
+1. Install Streamlit and dependencies:
+   
+   pip install -r requirements_streamlit.txt
+
+2. Or manually:
+   
+   pip install streamlit numpy pandas librosa matplotlib scipy scikit-learn joblib
+
+RUNNING THE APP
+════════════════════════════════════════════════════════════════════════════════
+
+In the project directory, run:
+
+   streamlit run streamlit_app.py
+
+The app will open in your browser at http://localhost:8501
+
+USAGE
+════════════════════════════════════════════════════════════════════════════════
+
+1. UPLOAD AUDIO
+   - Click "Choose an audio file"
+   - Select an MP3, WAV, OGG, or FLAC file
+   - Max file size is configurable in sidebar (default: 30MB)
+   - Sample rate is configurable in sidebar (default: 22050 Hz)
+
+2. ANALYSIS RESULTS
+   - Predicted Genre: The machine learning model's genre prediction
+   - Confidence: Probability score (0-100%)
+   - BPM: Detected tempo using beat tracking
+   - Duration: Length of audio in seconds
+   - Audio Player: Built-in player to listen to uploaded file
+
+3. VISUALIZATIONS
+   - Waveform: Time-domain representation of audio signal
+   - Mel Spectrogram: Frequency-time representation showing frequency content
+
+4. RECOMMENDATIONS
+   - Top 5 similar songs from training dataset
+   - Based on cosine similarity of features
+   - Shows file path, genre, and similarity score
+
+FEATURES EXTRACTED
+════════════════════════════════════════════════════════════════════════════════
+
+The app extracts the EXACT same features as training (Step 2):
+- FFT: Mean, Std, Max, Min, Median, Sum
+- STFT Envelope: Mean, Std, Max, Energy, Magnitude envelope stats
+- Mel Spectrogram: Mean, Std, Max, Min, Per-band statistics
+- MFCC: 13 coefficients with mean and std for each
+- Spectral Centroid: Mean, Std, Max, Min
+- Spectral Bandwidth: Mean, Std, Max, Min
+- Zero-Crossing Rate: Mean, Std, Max, Min
+- Chroma Features: 12 chroma bins with mean and std
+
+TROUBLESHOOTING
+════════════════════════════════════════════════════════════════════════════════
+
+Issue: "Model files not found"
+Solution: Ensure genre_model.joblib, label_encoder.pkl, and features.csv are
+          in the same directory as streamlit_app.py
+
+Issue: Audio file fails to load
+Solution: Ensure file is in supported format (MP3, WAV, OGG, FLAC)
+          Check file is not corrupted
+          Try a different audio file
+
+Issue: Slow processing
+Solution: Reduce sample rate in sidebar (e.g., 16000 Hz)
+          Use shorter audio files
+          Close other applications
+
+Issue: "File too large"
+Solution: Increase max file size in sidebar settings
+          Or use shorter audio clips
+
+Issue: "Could not find similar songs"
+Solution: Ensure features.csv is complete with training data
+          Check CSV has proper file_path and genre columns
+
+ADVANCED SETTINGS
+════════════════════════════════════════════════════════════════════════════════
+
+Sidebar Configuration:
+- Sample Rate (Hz): Adjust audio resampling (8000-44100 Hz)
+  Default 22050 Hz matches training data
+- Max File Size (MB): Maximum allowed upload size (1-100 MB)
+
+CODE STRUCTURE
+════════════════════════════════════════════════════════════════════════════════
+
+streamlit_app.py contains:
+
+1. Configuration: Page setup, model caching
+2. AudioFeatureExtractor: Exact feature extraction pipeline
+3. Audio Processing: Loading, feature extraction, prediction, BPM detection
+4. Similarity Search: Cosine similarity for recommendations
+5. Visualization: Waveform and mel spectrogram plots
+6. Streamlit UI: Tabs for Upload, Visualizations, Recommendations
+
+Functions:
+- load_models(): Caches and loads trained models
+- load_audio_file(): Loads audio with librosa
+- extract_features_from_file(): Complete feature extraction
+- get_genre_prediction(): Predicts genre with confidence
+- detect_bpm(): Detects tempo using beat tracking
+- find_similar_songs(): Finds top-5 similar songs
+- plot_waveform(): Audio waveform visualization
+- plot_mel_spectrogram(): Mel spectrogram visualization
+- main(): Main Streamlit app entry point
+
+PERFORMANCE NOTES
+════════════════════════════════════════════════════════════════════════════════
+
+Feature Extraction: ~2-5 seconds per audio file (depends on length and sample rate)
+Genre Prediction: <1 second
+BPM Detection: 1-2 seconds
+Similarity Search: 1-3 seconds (depends on dataset size)
+
+Total Processing Time: 5-15 seconds per audio file
+
+TIPS
+════════════════════════════════════════════════════════════════════════════════
+
+- Use 22050 Hz sample rate for best results (matches training)
+- Shorter audio files process faster
+- Similarity search works best with complete training dataset
+- Trust confidence scores > 80% for genre predictions
+- BPM works best for music with clear rhythm
+
+For best results, use audio files similar to GTZAN dataset
+(30-second pop/rock/hip-hop/blues/etc. tracks)

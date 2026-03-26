@@ -1,0 +1,342 @@
+STREAMLIT APP - COMPLETE CODE DOCUMENTATION
+
+═══════════════════════════════════════════════════════════════════════════════
+FILE: streamlit_app.py (450+ lines)
+═══════════════════════════════════════════════════════════════════════════════
+
+STRUCTURE
+═════════════════════════════════════════════════════════════════════════════
+
+1. IMPORTS & LOGGING
+   - streamlit: Web framework
+   - numpy: Numerical operations
+   - pandas: Data manipulation
+   - librosa: Audio processing
+   - matplotlib: Plotting
+   - pathlib: File path handling
+   - tempfile: Temporary file management
+   - joblib: Model loading
+   - scipy.spatial.distance: Similarity computation
+
+2. PAGE CONFIGURATION
+   - Page title: "Music Signal Analysis System"
+   - Layout: Wide (full width)
+   - Sidebar: Expanded by default
+
+3. MODEL LOADING (CACHED)
+   load_models() function:
+   - Caches models using @st.cache_resource
+   - Loads genre_model.joblib (trained classifier)
+   - Loads label_encoder.pkl (genre labels)
+   - Loads features.csv (training dataset)
+   - Returns: (model, encoder, features_df)
+
+═════════════════════════════════════════════════════════════════════════════
+SECTION 1: FEATURE EXTRACTION
+═════════════════════════════════════════════════════════════════════════════
+
+CLASS: AudioFeatureExtractor
+Purpose: Extract audio features using EXACT same pipeline as training (Step 2)
+
+METHODS:
+
+1. __init__(sr=22050)
+   - Initializes with sample rate (22050 Hz default)
+   - hop_length=512 (STFT frame hop)
+
+2. compute_fft(y) → dict
+   - FFT magnitude spectrum
+   - Returns 6 features:
+     * fft_mean, fft_std, fft_max, fft_min
+     * fft_median, fft_sum
+
+3. compute_stft_envelope(y) → dict
+   - STFT magnitude and energy envelope
+   - Returns 6 features:
+     * stft_mean, stft_std, stft_max
+     * stft_energy
+     * envelope_mean, envelope_std
+
+4. compute_mel_spectrogram(y) → dict
+   - Mel-scale spectrogram
+   - Returns 17 features:
+     * mel_mean, mel_std, mel_max, mel_min
+     * mel_band_0 through mel_band_12 (averages)
+
+5. compute_mfcc(y) → dict
+   - 13 Mel Frequency Cepstral Coefficients
+   - Returns 26 features:
+     * mfcc_0_mean, mfcc_0_std, ..., mfcc_12_std
+
+6. compute_spectral_centroid(y) → dict
+   - Spectral centroid (center of mass of spectrum)
+   - Returns 4 features:
+     * spectral_centroid_mean, _std, _max, _min
+
+7. compute_spectral_bandwidth(y) → dict
+   - Spectral spread around centroid
+   - Returns 4 features:
+     * spectral_bandwidth_mean, _std, _max, _min
+
+8. compute_zero_crossing_rate(y) → dict
+   - Zero crossings per frame
+   - Returns 4 features:
+     * zcr_mean, zcr_std, zcr_max, zcr_min
+
+9. compute_chroma_features(y) → dict
+   - 12 pitch classes (chromagram)
+   - Returns 24 features:
+     * chroma_0_mean, chroma_0_std, ..., chroma_11_std
+
+10. extract_features(y) → dict
+    - Orchestrates all feature extraction methods
+    - Aggregates into single dictionary
+    - Returns: ~86 total features (exact match to training)
+    - Handles exceptions gracefully
+
+TOTAL FEATURES: ~86 (matches training dataset)
+
+═════════════════════════════════════════════════════════════════════════════
+SECTION 2: AUDIO PROCESSING
+═════════════════════════════════════════════════════════════════════════════
+
+FUNCTION: load_audio_file(file_path, sr=22050) → (y, sr)
+   - Loads audio using librosa.load()
+   - Resamples to specified sample rate
+   - Returns: audio array (y), sample rate (sr)
+   - Error handling: Catches exceptions, logs error, returns (None, None)
+
+FUNCTION: extract_features_from_file(file_path, sr=22050) → (features, y, sr)
+   - Loads audio file
+   - Creates AudioFeatureExtractor instance
+   - Extracts features
+   - Returns: (features_dict, y_array, sr)
+   - Handles errors at each step
+
+FUNCTION: get_genre_prediction(features_dict, model, encoder) → (genre, confidence)
+   - Converts features dict to numpy array
+   - Calls model.predict() for genre class
+   - Calls model.predict_proba() for confidence
+   - Decodes genre using label_encoder
+   - Returns: (genre_string, confidence_float)
+   - Error handling with logging
+
+FUNCTION: detect_bpm(y, sr) → float (BPM)
+   - Uses librosa.beat.beat_track()
+   - Estimates tempo (beats per minute)
+   - Returns: BPM value (float)
+   - Returns None on error
+
+FUNCTION: find_similar_songs(features_dict, features_df, top_n=5) → list[dict]
+   - Computes cosine similarity with all training songs
+   - Similarity = 1 - cos_distance
+   - Selects top N most similar
+   - Returns list of dicts:
+     * Each dict has: file_path, genre, similarity
+   - Handles missing CSV columns gracefully
+
+═════════════════════════════════════════════════════════════════════════════
+SECTION 3: VISUALIZATION
+═════════════════════════════════════════════════════════════════════════════
+
+FUNCTION: plot_waveform(y, sr) → matplotlib.figure.Figure
+   - Creates waveform plot
+   - X-axis: Time in seconds
+   - Y-axis: Amplitude
+   - Returns: Figure object for st.pyplot()
+
+FUNCTION: plot_mel_spectrogram(y, sr) → matplotlib.figure.Figure
+   - Creates mel spectrogram plot
+   - Uses librosa.display.specshow()
+   - Color bar shows dB scale
+   - Returns: Figure object for st.pyplot()
+
+═════════════════════════════════════════════════════════════════════════════
+SECTION 4: STREAMLIT UI
+═════════════════════════════════════════════════════════════════════════════
+
+MAIN FUNCTION: main()
+
+UI LAYOUT:
+
+┌─────────────────────────────────────────────────────────────┐
+│  Header: "🎵 Music Signal Analysis System"                 │
+│  Subtitle: "Analyze music genre, detect BPM, find songs"  │
+└─────────────────────────────────────────────────────────────┘
+
+SIDEBAR:
+├─ Settings
+│  ├─ Sample Rate Slider (8000-44100 Hz, default 22050)
+│  └─ Max File Size (1-100 MB, default 30)
+
+MAIN AREA: Three Tabs
+
+TAB 1: "📤 Upload & Analysis"
+   ├─ File uploader (MP3, WAV, OGG, FLAC)
+   ├─ File size validation
+   ├─ Temporary file handling
+   ├─ Processing spinner
+   ├─ Analysis Results section
+   │  ├─ Column 1: Genre + Confidence
+   │  ├─ Column 2: BPM (Tempo)
+   │  └─ Column 3: Duration
+   ├─ Audio player (built-in Streamlit)
+   └─ Session state storage
+
+TAB 2: "📊 Visualizations"
+   ├─ Waveform plot (left column)
+   └─ Mel Spectrogram plot (right column)
+   (Shows placeholder if no audio loaded)
+
+TAB 3: "🔍 Recommendations"
+   ├─ Similar songs table
+   ├─ Columns: Song, Genre, Similarity Score
+   └─ Top 5 results from similarity search
+
+ERROR HANDLING:
+- File size too large: Alert user with max size
+- Audio load failure: Show error message
+- Feature extraction failure: Show error message
+- Model prediction failure: Show error message
+- CSV missing: Show error on recommendations tab
+
+SESSION STATE STORAGE:
+- st.session_state.features_dict: Extracted features
+- st.session_state.y: Audio array
+- st.session_state.sr: Sample rate
+- st.session_state.genre: Predicted genre
+- st.session_state.bpm: Detected BPM
+(Enables data sharing between tabs)
+
+═════════════════════════════════════════════════════════════════════════════
+WORKFLOW SEQUENCE
+═════════════════════════════════════════════════════════════════════════════
+
+1. User starts app: run_streamlit_app.bat or streamlit run streamlit_app.py
+2. App loads: Page config, models cached, UI rendered
+3. User uploads file: File validation, temp file created
+4. Processing:
+   a. Load audio with librosa
+   b. Extract ~86 features (exact training pipeline)
+   c. Predict genre with confidence
+   d. Detect BPM
+   e. Store results in session state
+5. Display: Results shown in Tab 1
+6. Optional visualization: Click Tab 2 to see plots
+7. Optional recommendations: Click Tab 3 to see similar songs
+8. Audio playback: Click built-in player to listen
+9. Cleanup: Temp file deleted after processing
+
+═════════════════════════════════════════════════════════════════════════════
+DATA FLOW
+═════════════════════════════════════════════════════════════════════════════
+
+Upload File
+    ↓
+[Temporary File Save] (tempfile module)
+    ↓
+[Load Audio] (librosa.load)
+    ↓
+[Extract Features] (AudioFeatureExtractor ~86 features)
+    ↓
+┌─────────────────────────────────────────┐
+├─ [Genre Prediction] (model.predict)     │
+├─ [Confidence Score] (predict_proba)     │
+├─ [BPM Detection] (librosa.beat.beat_... │
+└─────────────────────────────────────────┘
+    ↓
+┌─────────────────────────────────────────┐
+├─ [Session State Store]                  │
+├─ [Similarity Search] (cosine distance)  │
+├─ [Visualizations] (matplotlib)          │
+└─────────────────────────────────────────┘
+    ↓
+[UI Display] (3 tabs)
+    ↓
+[Cleanup] (delete temp file)
+
+═════════════════════════════════════════════════════════════════════════════
+KEY DESIGN DECISIONS
+═════════════════════════════════════════════════════════════════════════════
+
+1. Feature Extraction: EXACT same as training (Step 2)
+   - Ensures model receives expected feature format
+   - Maintains feature order consistency
+   - Prevents mismatch between training and inference
+
+2. Session State: Stores extracted data for tab switching
+   - Avoids re-extraction on each tab click
+   - Improves UX with responsive tabs
+
+3. Model Caching: Uses @st.cache_resource
+   - Avoids reloading models on every interaction
+   - Significantly speeds up app
+
+4. Temporary Files: Uses tempfile module
+   - No permanent storage of uploads
+   - Auto-cleanup after processing
+   - Works cross-platform (Windows/Mac/Linux)
+
+5. Error Handling: Graceful degradation
+   - Individual feature failures don't crash app
+   - Logged for debugging
+   - User-friendly error messages
+
+6. Modular Functions: ~10 functions + 1 class
+   - Easy to test and maintain
+   - Clear separation of concerns
+   - Reusable components
+
+═════════════════════════════════════════════════════════════════════════════
+PERFORMANCE CHARACTERISTICS
+═════════════════════════════════════════════════════════════════════════════
+
+Audio Loading:        0.5-1 second       (depends on file size)
+Feature Extraction:   1-3 seconds        (all 86 features)
+Genre Prediction:     <0.1 seconds       (model inference)
+BPM Detection:        1-2 seconds        (beat tracking algorithm)
+Similarity Search:    1-3 seconds        (depends on dataset size)
+Visualization:        1-2 seconds        (matplotlib rendering)
+────────────────────────────────────────────────────
+TOTAL:               5-15 seconds       (typical per file)
+
+═════════════════════════════════════════════════════════════════════════════
+DEPENDENCIES BREAKDOWN
+═════════════════════════════════════════════════════════════════════════════
+
+streamlit 1.28.0      - Web framework and UI
+numpy 1.24.3          - Numerical arrays and operations
+pandas 2.0.3          - DataFrame for CSV manipulation
+librosa 0.10.0        - Audio analysis and feature extraction
+matplotlib 3.7.2      - Plotting and visualization
+scipy 1.11.2          - Scientific computing (cosine distance)
+scikit-learn 1.3.0    - ML models (imported by joblib)
+joblib 1.3.1          - Model serialization (save/load)
+
+═════════════════════════════════════════════════════════════════════════════
+TESTING RECOMMENDATIONS
+═════════════════════════════════════════════════════════════════════════════
+
+1. Test with different audio formats:
+   - Test MP3, WAV, OGG, FLAC files
+   - Test 10s and 30s clips
+   - Test different sample rates
+
+2. Test edge cases:
+   - Very short audio (<1 second)
+   - Very long audio (>10 minutes)
+   - Corrupted files
+   - Mismatched sample rates
+
+3. Test UI interactions:
+   - Tab switching with/without audio
+   - File upload cancellation
+   - Settings slider adjustment
+   - Multiple sequential uploads
+
+4. Verify model compatibility:
+   - Ensure genre_model.joblib compatible with training code
+   - Check label_encoder.pkl has all genres
+   - Validate features.csv has correct columns
+
+═════════════════════════════════════════════════════════════════════════════
