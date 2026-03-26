@@ -30,8 +30,174 @@ PAGE_CONFIG = {
 st.set_page_config(**PAGE_CONFIG)
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# AUDIO PROCESSING
+# STYLING & THEMING
 # ═══════════════════════════════════════════════════════════════════════════════
+
+def apply_modern_theme():
+    """Apply modern gradient theme with custom CSS styling."""
+    css = """
+    <style>
+    /* Background gradient */
+    .stApp {
+        background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #6a3093 100%);
+        background-attachment: fixed;
+        min-height: 100vh;
+    }
+    
+    /* Main container styling */
+    .main-container {
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 20px;
+        padding: 30px;
+        margin: 20px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        backdrop-filter: blur(10px);
+    }
+    
+    /* Card styling for sections */
+    .card {
+        background: white;
+        border-radius: 15px;
+        padding: 25px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        border-left: 5px solid #6a3093;
+        transition: all 0.3s ease;
+    }
+    
+    .card:hover {
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        transform: translateY(-2px);
+    }
+    
+    /* Headings styling */
+    h1 {
+        color: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+        font-size: 3em;
+        font-weight: 800;
+        margin-bottom: 20px;
+        text-align: center;
+        letter-spacing: 1px;
+    }
+    
+    h2 {
+        color: #2a5298;
+        font-size: 2em;
+        font-weight: 700;
+        border-bottom: 3px solid #6a3093;
+        padding-bottom: 10px;
+    }
+    
+    h3 {
+        color: #1e3c72;
+        font-size: 1.5em;
+        font-weight: 600;
+    }
+    
+    /* Info box styling */
+    .stAlert {
+        border-radius: 15px;
+        border-left: 5px solid #2a5298;
+        background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%);
+    }
+    
+    /* Metric cards */
+    .metric-container {
+        display: flex;
+        gap: 15px;
+        flex-wrap: wrap;
+    }
+    
+    .metric-card {
+        flex: 1;
+        min-width: 200px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 20px;
+        border-radius: 12px;
+        text-align: center;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        transition: all 0.3s ease;
+    }
+    
+    .metric-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+    }
+    
+    /* File uploader styling */
+    .stFileUploadDropzone {
+        border-radius: 15px;
+        border: 2px dashed #6a3093;
+        background: linear-gradient(135deg, rgba(106, 48, 147, 0.05) 0%, rgba(42, 82, 152, 0.05) 100%);
+    }
+    
+    /* Button styling with gradient */
+    .stButton > button {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        padding: 12px 30px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    }
+    
+    .stButton > button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+    }
+    
+    /* Slider styling */
+    .stSlider {
+        padding: 15px;
+    }
+    
+    /* Tabs styling */
+    .stTabs [data-baseweb="tab"] {
+        background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%);
+        border-radius: 10px;
+        font-weight: 600;
+        color: #1e3c72;
+    }
+    
+    .stTabs [aria-selected="true"] {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+    
+    /* Text colors */
+    p {
+        color: #2c3e50;
+        font-size: 1.05em;
+        line-height: 1.6;
+    }
+    
+    /* Caption styling */
+    .caption {
+        color: #7f8c8d;
+        font-size: 0.95em;
+        font-style: italic;
+    }
+    
+    /* Responsive design */
+    @media (max-width: 768px) {
+        h1 {
+            font-size: 2em;
+        }
+        
+        h2 {
+            font-size: 1.5em;
+        }
+        
+        .card {
+            padding: 15px;
+        }
+    }
+    </style>
+    """
+    st.markdown(css, unsafe_allow_html=True)
 
 def load_audio_file(file_path, sr=22050):
     """Load audio file with librosa."""
@@ -354,18 +520,48 @@ def plot_chroma_features(y, sr):
 # ═══════════════════════════════════════════════════════════════════════════════
 
 def main():
-    """Main Streamlit app - Lightweight deployment version."""
+    """Main Streamlit app - Lightweight deployment version with modern UI."""
     
-    # Title and description
-    st.markdown("# 🎵 Music Signal Analysis System")
-    st.markdown("Lightweight demo: Analyze waveforms, spectrograms, and detect BPM")
+    # Apply modern theme
+    apply_modern_theme()
     
-    # Info box - Genre classification using rule-based features
-    st.info("ℹ️ **Genre Classification:** Rule-based prediction using spectral features (Spectral Centroid, Zero Crossing Rate, BPM, RMS Energy)")
+    # Custom title with HTML
+    st.markdown("""
+    <div style="text-align: center; padding: 30px 0;">
+        <h1 style="
+            color: white;
+            font-size: 3.5em;
+            text-shadow: 2px 2px 8px rgba(0,0,0,0.3);
+            margin: 0;
+            font-weight: 900;
+            letter-spacing: 2px;
+        ">
+            🎵 Music Signal Analyzer
+        </h1>
+        <p style="
+            color: rgba(255,255,255,0.9);
+            font-size: 1.2em;
+            margin-top: 10px;
+            text-shadow: 1px 1px 4px rgba(0,0,0,0.2);
+        ">
+            Advanced audio analysis with real-time waveform, spectrogram & BPM detection
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Info section in card
+    st.markdown("""
+    <div class="card">
+        <h3 style="color: #2a5298; margin-top: 0;">✨ Features</h3>
+        <p><strong>Genre Classification:</strong> Rule-based prediction using spectral features (Spectral Centroid, Zero Crossing Rate, BPM, RMS Energy)</p>
+        <p><strong>Advanced Visualizations:</strong> Waveform, Mel-Spectrogram, Spectral Analysis, FFT, Chromagram</p>
+        <p><strong>Performance:</strong> Optimized for cloud deployment – <100MB memory, <5 seconds processing</p>
+    </div>
+    """, unsafe_allow_html=True)
     
     # Sidebar
     with st.sidebar:
-        st.header("Settings")
+        st.markdown("### ⚙️ Settings")
         sample_rate = st.slider("Sample Rate (Hz)", 8000, 44100, 22050, step=1000)
         max_file_size = st.number_input("Max File Size (MB)", 1, 100, 30)
     
@@ -376,7 +572,13 @@ def main():
     # TAB 1: UPLOAD & ANALYSIS
     # ─────────────────────────────────────────────────────────────────────────
     with tab1:
-        st.subheader("Upload Audio File")
+        # Upload section in card
+        st.markdown("""
+        <div class="card">
+            <h3 style="color: #2a5298; margin-top: 0;">📤 Upload Audio File</h3>
+            <p>Select an audio file for analysis. Supports MP3, WAV, OGG, FLAC formats.</p>
+        </div>
+        """, unsafe_allow_html=True)
         
         uploaded_file = st.file_uploader(
             "Choose an audio file",
@@ -389,7 +591,7 @@ def main():
             if uploaded_file.size > max_file_size * 1024 * 1024:
                 st.error(f"File too large. Max size: {max_file_size}MB")
             else:
-                with st.spinner("Processing audio..."):
+                with st.spinner("🎵 Processing audio..."):
                     # Save to temporary file
                     with tempfile.NamedTemporaryFile(delete=False, suffix=Path(uploaded_file.name).suffix) as tmp_file:
                         tmp_file.write(uploaded_file.getbuffer())
@@ -399,24 +601,28 @@ def main():
                         # Load audio
                         y, sr = librosa.load(tmp_path, sr=sample_rate, mono=True, duration=10)
                         
-                        # Analysis results
-                        st.subheader("Analysis Results")
+                        # Analysis results in card
+                        st.markdown("""
+                        <div class="card">
+                            <h3 style="color: #2a5298; margin-top: 0;">📊 Analysis Results</h3>
+                        </div>
+                        """, unsafe_allow_html=True)
                         
                         col1, col2, col3, col4 = st.columns(4)
                         
                         with col1:
-                            st.metric("Duration", f"{len(y) / sr:.2f}s")
+                            st.metric("⏱️ Duration", f"{len(y) / sr:.2f}s")
                         
                         with col2:
                             bpm = detect_bpm(y, sr)
-                            st.metric("Tempo (BPM)", bpm)
+                            st.metric("🎵 Tempo (BPM)", bpm)
                         
                         with col3:
                             genre, confidence = predict_genre(y, sr, bpm)
-                            st.metric("Genre", genre)
+                            st.metric("🎸 Genre", genre)
                         
                         with col4:
-                            st.metric("Confidence", f"{confidence}%")
+                            st.metric("✅ Confidence", f"{confidence}%")
                         
                         # Audio player
                         st.audio(uploaded_file, format=f"audio/{Path(uploaded_file.name).suffix.strip('.')}")
