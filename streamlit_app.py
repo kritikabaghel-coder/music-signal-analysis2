@@ -34,22 +34,61 @@ st.set_page_config(**PAGE_CONFIG)
 # ═══════════════════════════════════════════════════════════════════════════════
 
 def apply_modern_theme():
-    """Apply minimal theme with gradient background only."""
+    """Apply soft pastel theme with clean white cards."""
     css = """
     <style>
-    /* Keep only the gradient background */
+    /* Soft pastel gradient background */
     .stApp {
-        background: linear-gradient(135deg, #1e3c72, #2a5298);
+        background: linear-gradient(135deg, #fbc2eb 0%, #a6c1ee 100%);
         background-attachment: fixed;
+        min-height: 100vh;
     }
     
-    /* Style card divs with inline styles (no global overrides) */
+    /* Card styling - clean white containers */
     .card {
         background: white;
-        padding: 20px;
-        border-radius: 12px;
-        margin-bottom: 15px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        padding: 25px;
+        border-radius: 15px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        border: 1px solid rgba(0, 0, 0, 0.05);
+    }
+    
+    /* Enhanced heading styling */
+    h1 {
+        color: #2d1b4e;
+        font-weight: 700;
+        font-size: 2.5em;
+        margin-bottom: 10px;
+    }
+    
+    h2 {
+        color: #3d2b5e;
+        font-weight: 700;
+        font-size: 2em;
+        margin-top: 20px;
+        margin-bottom: 10px;
+    }
+    
+    h3 {
+        color: #4d3b6e;
+        font-weight: 600;
+        font-size: 1.5em;
+        margin-top: 15px;
+    }
+    
+    /* Body text - dark for readability */
+    body, p, span, label, div {
+        color: #333333;
+    }
+    
+    /* Card text override for clarity */
+    .card p, .card span, .card label {
+        color: #333333;
+    }
+    
+    .card h3 {
+        color: #4d3b6e;
     }
     </style>
     """
@@ -385,20 +424,19 @@ def main():
     st.markdown("""
     <div style="text-align: center; padding: 30px 0;">
         <h1 style="
-            color: white;
+            color: #2d1b4e;
             font-size: 3.5em;
-            text-shadow: 2px 2px 8px rgba(0,0,0,0.3);
-            margin: 0;
             font-weight: 900;
             letter-spacing: 2px;
+            margin: 0;
         ">
             🎵 Music Signal Analyzer
         </h1>
         <p style="
-            color: rgba(255,255,255,0.9);
+            color: #4d3b6e;
             font-size: 1.2em;
             margin-top: 10px;
-            text-shadow: 1px 1px 4px rgba(0,0,0,0.2);
+            font-weight: 500;
         ">
             Advanced audio analysis with real-time waveform, spectrogram & BPM detection
         </p>
@@ -408,7 +446,7 @@ def main():
     # Info section in card
     st.markdown("""
     <div class="card">
-        <h3 style="color: #1a3a52; margin-top: 0;">✨ Features</h3>
+        <h3 style="color: #4d3b6e; margin-top: 0;">✨ Features</h3>
         <p><strong>Genre Classification:</strong> Rule-based prediction using spectral features (Spectral Centroid, Zero Crossing Rate, BPM, RMS Energy)</p>
         <p><strong>Advanced Visualizations:</strong> Waveform, Mel-Spectrogram, Spectral Analysis, FFT, Chromagram</p>
         <p><strong>Performance:</strong> Optimized for cloud deployment – <100MB memory, <5 seconds processing</p>
@@ -431,7 +469,7 @@ def main():
         # Upload section in card
         st.markdown("""
         <div class="card">
-            <h3 style="color: #1a3a52; margin-top: 0;">📤 Upload Audio File</h3>
+            <h3 style="color: #4d3b6e; margin-top: 0;">📤 Upload Audio File</h3>
             <p>Select an audio file for analysis. Supports MP3, WAV, OGG, FLAC formats.</p>
         </div>
         """, unsafe_allow_html=True)
@@ -460,7 +498,7 @@ def main():
                         # Analysis results in card
                         st.markdown("""
                         <div class="card">
-                            <h3 style="color: #1a3a52; margin-top: 0;">📊 Analysis Results</h3>
+                            <h3 style="color: #4d3b6e; margin-top: 0;">📊 Analysis Results</h3>
                         </div>
                         """, unsafe_allow_html=True)
                         
