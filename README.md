@@ -456,33 +456,50 @@ Generates: `outputs/bpm_results.csv` with tempo values per genre
 streamlit run streamlit_app.py
 ```
 Opens: http://localhost:8501
-- Upload audio files
-- View predictions & BPM
-- Explore similar songs
-- Visualize spectrograms
+
+**Tab 1: 📤 Upload & Analysis**
+- Upload audio files (MP3, WAV, OGG, FLAC)
+- Real-time BPM detection using librosa beat tracking
+- Duration and audio statistics
+- Audio player for playback
+
+**Tab 2: 📊 Visualizations**
+- Time-domain waveform plot (amplitude over time)
+- Mel-spectrogram visualization (frequency & time plot)
+- Color-coded frequency intensity
+
+**Tab 3: 📊 Advanced Signal Analysis** ⭐ **NEW**
+Advanced audio feature extraction with expandable sections:
+- **🔴 Spectral Centroid**: Shows the brightness of sound over time (higher = brighter)
+- **🟢 Spectral Bandwidth**: Width of frequencies present in the signal
+- **🔵 RMS Energy**: Audio loudness/energy level over time
+- **🟡 Frequency Distribution (FFT)**: Which frequencies are present (Fast Fourier Transform)
+- **⚫ Chromagram**: Intensity of 12 musical notes over time (musical note analysis)
+
+Performance optimized with expandable sections (only load when needed).
 
 ### 🚀 Launch Lightweight Deployment App (Recommended for Production)
 ```bash
-pip install -r requirements_deployment.txt
-streamlit run streamlit_app_light.py
+pip install -r requirements.txt
+streamlit run streamlit_app.py
 ```
 Opens: http://localhost:8501
 - **Ultra-lightweight version** optimized for deployment
-- Upload audio file (5MB limit)
-- Processes first 5 seconds only
+- Upload audio file (MP3, WAV, OGG, FLAC)
+- Processes first 10 seconds (automatically)
 - Real-time waveform visualization
 - Real-time spectrogram analysis
 - Instant BPM detection
-- Download visualizations as PNG
-- **Memory-efficient** (~50-100 MB peak usage)
+- **Advanced Signal Analysis** with 5 expandable visualizations
+- **Memory-efficient** (~100-150 MB peak usage)
 - **Fast processing** (<5 seconds typical)
 - No background dataset loading
-- Perfect for cloud deployment (Heroku, Streamlit Cloud, etc.)
+- Perfect for cloud deployment (Streamlit Cloud, Heroku, etc.)
 
 Features:
 - 📤 **Upload Tab**: Select audio file (MP3, WAV, OGG, FLAC)
 - 📊 **Visualizations Tab**: Real-time waveform & spectrogram plots
-- 📈 **Results Tab**: BPM detection, audio statistics, export options
+- 📊 **Advanced Signal Analysis Tab**: Spectral centroid, bandwidth, RMS energy, FFT, chromagram
 
 ---
 

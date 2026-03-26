@@ -85,6 +85,95 @@ def plot_mel_spectrogram(y, sr):
     return fig
 
 
+def plot_spectral_centroid(y, sr):
+    """Plot spectral centroid over time (brightness of sound)."""
+    # Compute spectral centroid
+    spectral_centroid = librosa.feature.spectral_centroid(y=y, sr=sr)[0]
+    frames = range(len(spectral_centroid))
+    t = librosa.frames_to_time(frames, sr=sr)
+    
+    fig, ax = plt.subplots(figsize=(12, 4))
+    ax.plot(t, spectral_centroid, color="#FF6B6B", linewidth=2)
+    ax.fill_between(t, spectral_centroid, alpha=0.2, color="#FF6B6B")
+    ax.set_xlabel("Time (s)")
+    ax.set_ylabel("Spectral Centroid (Hz)")
+    ax.set_title("Spectral Centroid Over Time (Brightness)")
+    ax.grid(alpha=0.3)
+    plt.tight_layout()
+    return fig
+
+
+def plot_spectral_bandwidth(y, sr):
+    """Plot spectral bandwidth over time."""
+    # Compute spectral bandwidth
+    spectral_bandwidth = librosa.feature.spectral_bandwidth(y=y, sr=sr)[0]
+    frames = range(len(spectral_bandwidth))
+    t = librosa.frames_to_time(frames, sr=sr)
+    
+    fig, ax = plt.subplots(figsize=(12, 4))
+    ax.plot(t, spectral_bandwidth, color="#4ECDC4", linewidth=2)
+    ax.fill_between(t, spectral_bandwidth, alpha=0.2, color="#4ECDC4")
+    ax.set_xlabel("Time (s)")
+    ax.set_ylabel("Spectral Bandwidth (Hz)")
+    ax.set_title("Spectral Bandwidth Over Time")
+    ax.grid(alpha=0.3)
+    plt.tight_layout()
+    return fig
+
+
+def plot_rms_energy(y, sr):
+    """Plot RMS energy over time (signal energy)."""
+    # Compute RMS energy
+    rms_energy = librosa.feature.rms(y=y)[0]
+    frames = range(len(rms_energy))
+    t = librosa.frames_to_time(frames, sr=sr)
+    
+    fig, ax = plt.subplots(figsize=(12, 4))
+    ax.plot(t, rms_energy, color="#95E1D3", linewidth=2)
+    ax.fill_between(t, rms_energy, alpha=0.2, color="#95E1D3")
+    ax.set_xlabel("Time (s)")
+    ax.set_ylabel("RMS Energy")
+    ax.set_title("RMS Energy Over Time (Signal Energy)")
+    ax.grid(alpha=0.3)
+    plt.tight_layout()
+    return fig
+
+
+def plot_fft(y, sr):
+    """Plot frequency distribution using FFT."""
+    # Compute FFT
+    fft = np.fft.fft(y)
+    magnitude = np.abs(fft)
+    frequencies = np.fft.fftfreq(len(y), 1/sr)
+    
+    # Take only positive frequencies
+    positive_freq_idx = frequencies > 0
+    frequencies = frequencies[positive_freq_idx]
+    magnitude = magnitude[positive_freq_idx]
+    
+    fig, ax = plt.subplots(figsize=(12, 4))
+    ax.semilogy(frequencies[:len(frequencies)//4], magnitude[:len(magnitude)//4], color="#A8E6CF", linewidth=1)
+    ax.set_xlabel("Frequency (Hz)")
+    ax.set_ylabel("Magnitude (log scale)")
+    ax.set_title("Frequency Distribution (FFT)")
+    ax.grid(alpha=0.3, which="both")
+    ax.set_xlim([0, sr//2])
+    plt.tight_layout()
+    return fig
+
+
+def plot_chroma_features(y, sr):
+    """Plot chromagram (musical content)."""
+    chroma = librosa.feature.chroma_cqt(y=y, sr=sr)
+    
+    fig, ax = plt.subplots(figsize=(12, 5))
+    img = librosa.display.specshow(chroma, sr=sr, x_axis="time", y_axis="chroma", ax=ax, hop_length=512)
+    fig.colorbar(img, ax=ax, format="%+2.0f")
+    ax.set_title("Chromagram (Musical Notes)")
+    plt.tight_layout()
+    return fig
+
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # STREAMLIT UI
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -106,7 +195,7 @@ def main():
         max_file_size = st.number_input("Max File Size (MB)", 1, 100, 30)
     
     # Main tabs
-    tab1, tab2 = st.tabs(["📤 Upload & Analysis", "📊 Visualizations"])
+    tab1, tab2, tab3 = st.tabs(["📤 Upload & Analysis", "📊 Visualizations", "📊 Advanced Signal Analysis"])
     
     # ─────────────────────────────────────────────────────────────────────────
     # TAB 1: UPLOAD & ANALYSIS
@@ -159,7 +248,7 @@ def main():
                         # Audio player
                         st.audio(uploaded_file, format=f"audio/{Path(uploaded_file.name).suffix.strip('.')}")
                         
-                        # Store in session state for other tab
+                        # Store in session state for other tabs
                         st.session_state.y = y
                         st.session_state.sr = sr
                         st.session_state.bpm = bpm
@@ -191,6 +280,56 @@ def main():
                 st.pyplot(plot_mel_spectrogram(st.session_state.y, st.session_state.sr))
         else:
             st.info("Upload an audio file first to see visualizations")
+    
+    # ─────────────────────────────────────────────────────────────────────────
+    # TAB 3: ADVANCED SIGNAL ANALYSIS
+    # ─────────────────────────────────────────────────────────────────────────
+    with tab3:
+        if "y" in st.session_state:
+            st.subheader("📊 Advanced Signal Analysis")
+            
+            # Create expandable sections for performance optimization
+            with st.expander("🔴 Spectral Centroid (Brightness)", expanded=True):
+                try:
+                    st.pyplot(plot_spectral_centroid(st.session_state.y, st.session_state.sr))
+                    st.caption("Shows the brightness of the sound over time. Higher values = brighter sound.")
+                except Exception as e:
+                    st.error(f"Error computing spectral centroid: {e}")
+                    logger.error(f"Spectral centroid error: {e}")
+            
+            with st.expander("🟢 Spectral Bandwidth", expanded=True):
+                try:
+                    st.pyplot(plot_spectral_bandwidth(st.session_state.y, st.session_state.sr))
+                    st.caption("Shows the width of frequencies present in the signal.")
+                except Exception as e:
+                    st.error(f"Error computing spectral bandwidth: {e}")
+                    logger.error(f"Spectral bandwidth error: {e}")
+            
+            with st.expander("🔵 RMS Energy (Signal Energy)", expanded=True):
+                try:
+                    st.pyplot(plot_rms_energy(st.session_state.y, st.session_state.sr))
+                    st.caption("Shows the energy level (loudness) of the audio over time.")
+                except Exception as e:
+                    st.error(f"Error computing RMS energy: {e}")
+                    logger.error(f"RMS energy error: {e}")
+            
+            with st.expander("🟡 Frequency Distribution (FFT)", expanded=False):
+                try:
+                    st.pyplot(plot_fft(st.session_state.y, st.session_state.sr))
+                    st.caption("Shows which frequencies are present in the signal (computed using Fast Fourier Transform).")
+                except Exception as e:
+                    st.error(f"Error computing FFT: {e}")
+                    logger.error(f"FFT error: {e}")
+            
+            with st.expander("⚫ Chromagram (Musical Notes)", expanded=False):
+                try:
+                    st.pyplot(plot_chroma_features(st.session_state.y, st.session_state.sr))
+                    st.caption("Shows the intensity of 12 musical note classes over time.")
+                except Exception as e:
+                    st.error(f"Error computing chromagram: {e}")
+                    logger.error(f"Chromagram error: {e}")
+        else:
+            st.info("Upload an audio file first to see advanced signal analysis")
 
 
 if __name__ == "__main__":
