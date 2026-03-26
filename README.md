@@ -64,37 +64,24 @@ Visualization in Streamlit UI
 ## 📸 Screenshots
 
 ### 🎵 Home Interface
-<p align="center">
-  <img src="assets/home.png" width="800" alt="Home Interface with Features Card"/>
-</p>
+<img width="1847" height="771" alt="image" src="https://github.com/user-attachments/assets/afe2ad2b-00b3-4f31-8e63-dc6c5de67ac1" />
 
 ---
 
 ### 📤 Upload & Analysis
-<p align="center">
-  <img src="assets/upload.png" width="800" alt="Upload Section with File Uploader"/>
-</p>
-
----
-
-### 📊 Analysis Results
-<p align="center">
-  <img src="assets/results.png" width="800" alt="Analysis Results with Metrics"/>
-</p>
+<img width="1835" height="765" alt="image" src="https://github.com/user-attachments/assets/9a3e90ea-e20f-4e84-a422-8970c92bd7c5" />
 
 ---
 
 ### 📈 Visualizations
-<p align="center">
-  <img src="assets/visualizations.png" width="800" alt="Waveform and Spectrogram Visualizations"/>
-</p>
+<img width="1855" height="692" alt="image" src="https://github.com/user-attachments/assets/1ba63f7c-62e9-4a9e-a58e-34a947cd2d94" />
 
 ---
 
 ### 🧠 Advanced Signal Analysis
-<p align="center">
-  <img src="assets/advanced.png" width="800" alt="Advanced Signal Analysis with Expandable Sections"/>
-</p>
+<img width="1838" height="595" alt="image" src="https://github.com/user-attachments/assets/76ee2302-af84-4b48-8533-a4be9c971c85" />
+<img width="1852" height="768" alt="image" src="https://github.com/user-attachments/assets/928f0cd3-4076-4171-a35b-1cb28ae60cbb" />
+
 
 ---
 
