@@ -36,18 +36,13 @@ st.set_page_config(**PAGE_CONFIG)
 def load_audio_file(file_path, sr=22050):
     """Load audio file with librosa."""
     try:
-        y, sr = librosa.load(file_path, sr=sr, mono=True)
+        y, sr = librosa.load(file_path, sr=sr, mono=True, duration=10)
         logger.info(f"Loaded audio: duration={len(y)/sr:.2f}s")
         return y, sr
     except Exception as e:
         logger.error(f"Audio loading error: {e}")
         st.error(f"❌ Failed to load audio: {str(e)}")
         return None, None
-    
-    if features is None:
-        return None
-    
-    return features, y, sr
 
 
 def detect_bpm(y, sr):
